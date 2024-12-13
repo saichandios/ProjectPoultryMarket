@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- When item is selected (clicked), the background will be yellow -->
+    <item android:drawable="@color/bgColor" android:state_checked="true" />
+    <!-- Default background for unselected items -->
+    <item android:drawable="@android:color/transparent" />
+</selector>

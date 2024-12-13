@@ -1,0 +1,68 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="@color/bgColor">
+
+
+
+        <Spinner
+            android:id="@+id/job_role_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:entries="@array/need_employee_roles"
+            android:background="@drawable/border_spinner"
+            android:layout_marginBottom="25dp"
+            android:prompt="@string/select_job_role"/>
+
+        <Spinner
+            android:id="@+id/job_format"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:entries="@array/need_employee_job_format"
+            android:background="@drawable/border_spinner"
+            android:layout_marginBottom="25dp"
+            android:prompt="@string/select_job_format"/>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:background="@drawable/border_frame"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Salary"
+            android:textSize="16sp"
+            android:textColor="#000"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/salary_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter salary amount"
+            android:inputType="number"
+            android:background="@android:drawable/edit_text"
+            android:padding="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Submit Button -->
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        android:textSize="18sp"
+        android:backgroundTint="@color/bgButtonColor"
+        android:textColor="#FFFFFF"/>
+
+</LinearLayout>

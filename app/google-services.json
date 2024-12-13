@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "838893943438",
+    "project_id": "poultrymarket2",
+    "storage_bucket": "poultrymarket2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838893943438:android:df0450cc1c243e0634a7df",
+        "android_client_info": {
+          "package_name": "com.gsggroups.poultrymarket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNrso7EHQj2EYyq7AWhisGWyKppwo3TYM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

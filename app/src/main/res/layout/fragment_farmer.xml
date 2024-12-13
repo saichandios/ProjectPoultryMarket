@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
+    tools:context=".DashboardView.FarmerFragment">
+
+    <!-- Search Bar -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:queryHint="Search Farms..."
+        android:iconifiedByDefault="false"
+        android:background="@android:drawable/editbox_background"/>
+
+    <!-- Horizontal Layout for Dropdowns (State and District) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:orientation="horizontal"
+        android:paddingTop="2dp" >
+
+        <!-- State Dropdown -->
+        <Spinner
+            android:id="@+id/state_dropdown"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="0.35"
+            android:spinnerMode="dropdown"
+            android:prompt="@string/select_state"
+            android:background="@drawable/border_spinner"
+            android:entries="@array/states" />
+
+        <!-- District Dropdown -->
+        <Spinner
+            android:id="@+id/district_dropdown"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="0.35"
+            android:spinnerMode="dropdown"
+            android:prompt="@string/select_district"
+            android:background="@drawable/border_spinner"
+            android:entries="@array/districts"/>
+
+        <Button
+            android:id="@+id/farmer_filter_button"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="0.3"
+            android:text="Filter"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:backgroundTint="@color/bgButtonColor" />
+
+    </LinearLayout>
+
+    <!-- RecyclerView to show content -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dashboardRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/dashboard_recycler_row"/>
+
+</LinearLayout>

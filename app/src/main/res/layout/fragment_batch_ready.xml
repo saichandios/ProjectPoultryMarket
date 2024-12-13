@@ -1,0 +1,124 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="@color/bgColor">
+
+    <!-- Layout 1: Load Availability with Switch -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:background="@drawable/border_frame"
+        android:gravity="center"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load Availability"
+            android:textSize="16sp"
+            android:textColor="#000"
+            android:id="@+id/load_available_text"/>
+
+        <Switch
+            android:id="@+id/load_available_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"/>
+
+    </LinearLayout>
+
+    <!-- Layout 2: Hen Count with EditText -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:background="@drawable/border_frame"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hen Count"
+            android:textSize="16sp"
+            android:textColor="#000"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/text_hen_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter count"
+            android:inputType="number"
+            android:background="@android:drawable/edit_text"
+            android:padding="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Layout 3: Hen Size with Dropdown -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:background="@drawable/border_frame"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hen Size(Kgs)"
+            android:textSize="16sp"
+            android:textColor="#000"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:entries="@array/hen_size_values"
+            android:background="@drawable/border_spinner"
+            android:prompt="@string/select_hen_Size"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:background="@drawable/border_frame"
+        android:layout_marginBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Farm"
+            android:textSize="16sp"
+            android:textColor="#000"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:entries="@array/farm_values"
+            android:background="@drawable/border_spinner"
+            android:prompt="@string/select_farm"/>
+
+    </LinearLayout>
+
+    <!-- Submit Button -->
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        android:textSize="18sp"
+        android:backgroundTint="@color/bgButtonColor"
+        android:textColor="#FFFFFF"/>
+
+</LinearLayout>

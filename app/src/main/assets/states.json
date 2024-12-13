@@ -1,0 +1,146 @@
+[
+    {
+        "stateName": "Andaman and Nicobar Islands",
+        "stateId": "SAN"
+    },
+    {
+        "stateName": "Andhra Pradesh",
+        "stateId": "SAP"
+    },
+    {
+        "stateName": "Arunachal Pradesh",
+        "stateId": "SAR"
+    },
+    {
+        "stateName": "Assam",
+        "stateId": "SAS"
+    },
+    {
+        "stateName": "Bihar",
+        "stateId": "SBR"
+    },
+    {
+        "stateName": "Chandigarh",
+        "stateId": "SCH"
+    },
+    {
+        "stateName": "Chhattisgarh",
+        "stateId": "SCG"
+    },
+    {
+        "stateName": "Dadra and Nagar Haveli and Daman and Diu",
+        "stateId": "SDD"
+    },
+    {
+        "stateName": "Delhi",
+        "stateId": "SDL"
+    },
+    {
+        "stateName": "Goa",
+        "stateId": "SGA"
+    },
+    {
+        "stateName": "Gujarat",
+        "stateId": "SGJ"
+    },
+    {
+        "stateName": "Haryana",
+        "stateId": "SHR"
+    },
+    {
+        "stateName": "Himachal Pradesh",
+        "stateId": "SHP"
+    },
+    {
+        "stateName": "Jammu and Kashmir",
+        "stateId": "SJK"
+    },
+    {
+        "stateName": "Jharkhand",
+        "stateId": "SJH"
+    },
+    {
+        "stateName": "Karnataka",
+        "stateId": "SKA"
+    },
+    {
+        "stateName": "Kerala",
+        "stateId": "SKL"
+    },
+    {
+        "stateName": "Ladakh",
+        "stateId": "SLK"
+    },
+    {
+        "stateName": "Lakshadweep",
+        "stateId": "SLD"
+    },
+    {
+        "stateName": "Madhya Pradesh",
+        "stateId": "SMP"
+    },
+    {
+        "stateName": "Maharashtra",
+        "stateId": "SMH"
+    },
+    {
+        "stateName": "Manipur",
+        "stateId": "SMN"
+    },
+    {
+        "stateName": "Meghalaya",
+        "stateId": "SMG"
+    },
+    {
+        "stateName": "Mizoram",
+        "stateId": "SMZ"
+    },
+    {
+        "stateName": "Nagaland",
+        "stateId": "SNL"
+    },
+    {
+        "stateName": "Odisha",
+        "stateId": "SOD"
+    },
+    {
+        "stateName": "Puducherry",
+        "stateId": "SPD"
+    },
+    {
+        "stateName": "Punjab",
+        "stateId": "SPB"
+    },
+    {
+        "stateName": "Rajasthan",
+        "stateId": "SRJ"
+    },
+    {
+        "stateName": "Sikkim",
+        "stateId": "SSK"
+    },
+    {
+        "stateName": "Tamil Nadu",
+        "stateId": "STN"
+    },
+    {
+        "stateName": "Telangana",
+        "stateId": "STG"
+    },
+    {
+        "stateName": "Tripura",
+        "stateId": "STR"
+    },
+    {
+        "stateName": "Uttar Pradesh",
+        "stateId": "SUP"
+    },
+    {
+        "stateName": "Uttarakhand",
+        "stateId": "SUK"
+    },
+    {
+        "stateName": "West Bengal",
+        "stateId": "SWB"
+    }
+]

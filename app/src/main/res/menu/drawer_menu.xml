@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+    <item
+        android:id="@+id/nav_List"
+        android:title="List"
+        android:icon="@drawable/list_side" />
+    <item
+        android:id="@+id/nav_BatchReady"
+        android:title="(Load)Batch Ready"
+        android:icon="@drawable/batch_ready_side" />
+    <item
+        android:id="@+id/nav_EmployeeList"
+        android:title="Employee List"
+        android:icon="@drawable/employee_list_side" />
+    <item
+        android:id="@+id/nav_NeedEmployee"
+        android:title="Need Employee"
+        android:icon="@drawable/need_employee_side" />
+
+    </group>
+
+
+    <item android:title="Todo">
+        <menu>
+            <group android:checkableBehavior="single">
+            <item
+                android:id="@+id/nav_Notification"
+                android:title="Notifications"
+                android:icon="@drawable/notification_side" />
+            <item
+                android:id="@+id/nav_Profile"
+                android:title="Profile"
+                android:icon="@drawable/profile_side" />
+            </group>
+        </menu>
+    </item>
+
+
+    <item android:title="Rates">
+        <menu>
+            <group android:checkableBehavior="single">
+    <item
+        android:id="@+id/nav_ChickenRates"
+        android:title="Chicken Rates"
+        android:icon="@drawable/hen_rate_side" />
+    <item
+        android:id="@+id/nav_EggRates"
+        android:title="Egg Rates"
+        android:icon="@drawable/egg_rate_side" />
+            </group>
+        </menu>
+    </item>
+
+    <item android:title="Settings">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_Logout"
+                    android:title="Logout"
+                    android:icon="@drawable/logout" />
+            </group>
+        </menu>
+    </item>
+
+</menu>

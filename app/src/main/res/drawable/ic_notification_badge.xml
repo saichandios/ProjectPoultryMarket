@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Circle Shape for the Badge -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#00FF22"/>
+            <size
+                android:width="16dp"
+                android:height="16dp"/>
+        </shape>
+    </item>
+
+    <!-- Optional Number or Dot inside the Circle -->
+    <item android:gravity="center_horizontal">
+        <text
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+        android:textColor="@android:color/white"
+        android:textSize="10sp"
+        android:textStyle="bold"/>
+    </item>
+</layer-list>

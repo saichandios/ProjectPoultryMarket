@@ -1,0 +1,30 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Tab Text -->
+    <TextView
+        android:id="@+id/tab_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tab Title"
+        android:textColor="@android:color/black"
+        android:textSize="16sp" />
+
+    <Space
+        android:layout_width="8dp"
+        android:layout_height="wrap_content" />
+
+    <!-- Notification Badge (can be a dot or a number) -->
+    <ImageView
+        android:id="@+id/notification_badge"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="10dp"
+        android:src="@drawable/ic_notification_badge"
+        android:visibility="visible" />
+
+</RelativeLayout>

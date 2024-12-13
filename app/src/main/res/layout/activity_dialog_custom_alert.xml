@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+<!-- Header Title -->
+<TextView
+    android:id="@+id/tvTitle"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Title"
+    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+    android:layout_gravity="center"
+    android:paddingBottom="8dp"/>
+
+<!-- Description Label -->
+<TextView
+    android:id="@+id/tvDescription"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Description"
+    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+    android:layout_gravity="center"
+    android:paddingBottom="16dp"/>
+
+<!-- OK Button -->
+<Button
+    android:id="@+id/btnOk"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="OK"
+    android:visibility="gone"
+    android:layout_marginBottom="8dp"/>
+
+<!-- Cancel Button -->
+<Button
+    android:id="@+id/btnCancel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Cancel"
+    android:visibility="gone"/>
+
+</LinearLayout>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="hen_size_values">
+        <item>Select Hen Size</item>
+        <item>1.1 kg</item>
+        <item>1.2 kg</item>
+        <item>1.3 kg</item>
+        <item>1.4 kg</item>
+        <item>1.5 kg</item>
+        <item>1.6 kg</item>
+        <item>1.7 kg</item>
+        <item>1.8 kg</item>
+        <item>1.9 kg</item>
+        <item>2.0 kg</item>
+        <item>2.1 kg</item>
+        <item>2.2 kg</item>
+        <item>2.3 kg</item>
+        <item>2.4 kg</item>
+        <item>2.5 kg</item>
+        <item>2.6 kg</item>
+        <item>2.7 kg</item>
+        <item>2.8 kg</item>
+        <item>2.9 kg</item>
+        <item>3.0 kg</item>
+    </string-array>
+
+    <string-array name="farm_values">
+        <item>Select farm</item>
+        <item>Farm-1</item>
+        <item>Farm-2</item>
+    </string-array>
+
+    <string-array name="need_employee_roles">
+        <item>Select job role</item>
+        <item>Driver</item>
+        <item>cutter</item>
+        <item>Supervisor</item>
+    </string-array>
+
+    <string-array name="need_employee_job_format">
+        <item>Select job format</item>
+        <item>Daily</item>
+        <item>weekly</item>
+        <item>monthly</item>
+    </string-array>
+
+</resources>

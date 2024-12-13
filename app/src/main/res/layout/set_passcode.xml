@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/setPasscode"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@color/bgColor"
+    tools:context=".SetPasscode">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/customToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/bgColor"
+        android:elevation="4dp"
+        android:theme="@style/CustomToolbar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:foregroundTint="@color/black"
+        tools:ignore="MissingConstraints" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customToolbar">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <!-- Top Logo -->
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/splash"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Login Text -->
+    <TextView
+        android:id="@+id/loginTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Passcode"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/logoImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Phone Number Input -->
+
+    <!-- Passcode Label and Input (4 Boxes) -->
+
+    <!-- Login Button -->
+
+
+    <LinearLayout
+        android:id="@+id/passcodeLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/phoneEditText">
+
+        <!-- Passcode Label -->
+        <TextView
+            android:id="@+id/passcodeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="OTP"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Passcode Input (4 Boxes) -->
+        <EditText
+            android:id="@+id/passcodeEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/gray_edittext_background"
+            android:gravity="center"
+            android:inputType="number"
+            android:maxLength="4"
+            android:hint="Enter OTP"
+            android:digits="0123456789"
+            android:autofillHints="sms_otp" />
+    </LinearLayout>
+    <!--=========================Set passcode==================================-->
+    <LinearLayout
+        android:id="@+id/SetPasscodeLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/passcodeLayout">
+
+        <!-- Passcode Label -->
+        <TextView
+            android:id="@+id/setPasscodeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Set Passcode"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Passcode Input (4 Boxes) -->
+        <EditText
+            android:id="@+id/setPinEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/gray_edittext_background"
+            android:gravity="left"
+            android:inputType="number"
+            android:maxLength="4"
+            android:hint="Enter 4-digit PIN"
+            android:digits="0123456789"/>
+    </LinearLayout>
+
+    <!--    =====================================  ============== -->
+
+    <LinearLayout
+        android:id="@+id/ConfirmPasscodeLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/SetPasscodeLayout">
+
+        <!-- Passcode Label -->
+        <TextView
+            android:id="@+id/ConfirmPasscodeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Confirm Passcode"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Passcode Input (4 Boxes) -->
+        <EditText
+            android:id="@+id/confirmPinEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/gray_edittext_background"
+            android:gravity="left"
+            android:inputType="number"
+            android:maxLength="4"
+            android:hint="Confirm 4-digit PIN"
+            android:digits="0123456789"/>
+    </LinearLayout>
+
+    <!--=======================================================-->
+    <EditText
+        android:id="@+id/phoneEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginStart="15dp"
+        android:hint="Enter Phone Number"
+        android:maxLength="10"
+        android:inputType="phone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/loginTitle" />
+
+    <Button
+        android:id="@+id/Submit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:textSize="20sp"
+        android:backgroundTint="@color/bgButtonColor"
+        android:text="Submit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ConfirmPasscodeLayout"
+        app:layout_constraintWidth_percent="0.6" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
