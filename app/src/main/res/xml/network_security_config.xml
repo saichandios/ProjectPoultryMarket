@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <domain-config cleartext-traffic-permitted="true">
-        <domain includeSubdomains="true">localhost</domain>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">overpass-api.de</domain>
+        <domain includeSubdomains="true">geonames.org</domain>
     </domain-config>
 </network-security-config>

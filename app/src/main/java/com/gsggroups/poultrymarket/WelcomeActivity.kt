@@ -13,6 +13,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.google.gson.Gson
+import com.gsggroups.poultrymarket.Common.NetworkManager
+import com.gsggroups.poultrymarket.Common.NominatimApiClient
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Employement.EmployementDashboard
@@ -21,12 +23,20 @@ import com.phonepe.intent.sdk.api.PhonePe
 import com.phonepe.intent.sdk.api.PhonePeInitException
 import com.phonepe.intent.sdk.api.TransactionRequestBuilder
 import com.phonepe.intent.sdk.api.models.PhonePeEnvironment
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONObject
+import java.io.IOException
 import java.security.MessageDigest
 
 
 class WelcomeActivity : AppCompatActivity() {
     private lateinit var paymentLauncher: ActivityResultLauncher<Intent>
+    private val networkManager = NetworkManager()
+    private val client = OkHttpClient()
 
     companion object {
         const val DEBIT_REQUEST_CODE = 1001 // Request code for transaction
@@ -45,6 +55,12 @@ class WelcomeActivity : AppCompatActivity() {
         } else {
             setContentView(R.layout.activity_welcome)
         }
+
+
+
+
+
+
         // Get references to the cards
         val cardFarmer = findViewById<CardView>(R.id.cardFarmer1)
         val cardTrader = findViewById<CardView>(R.id.cardTrader)
@@ -55,11 +71,11 @@ class WelcomeActivity : AppCompatActivity() {
         setupPaymentInputs()
         // Set click listeners for each card
         cardFarmer.setOnClickListener {
-            Toast.makeText(this, "Farmer Card Clicked", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, RegisterSingup::class.java)
             val userRole = "Farmer" // This value would be determined dynamically
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
-            startActivity(intent)
+            districtsFinder()
+//            startActivity(intent)
 //            finish() // Close Welcome page
 //            initiatePayment()
 //            launchPhonePe()
@@ -120,6 +136,77 @@ class WelcomeActivity : AppCompatActivity() {
 //        }
 //    }
 
+    private fun geoNames() {
+        val lat = 16.3067
+        val lon = 80.4365
+        val username = "saichandgeo" // Replace with your GeoNames username
+
+        // GeoNames API URL for nearby districts
+        val url = "http://api.geonames.org/neighboursJSON?lat=$lat&lng=$lon&username=$username"
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        // Make the API call
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@WelcomeActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    val jsonResponse = responseBody?.let { JSONObject(it) }
+                    val neighboringDistricts = mutableListOf<String>()
+
+                    // Get neighboring districts
+                    val neighbours = jsonResponse?.getJSONArray("geonames")
+                    if (neighbours != null) {
+                        for (i in 0 until neighbours.length()) {
+                            val district = neighbours.getJSONObject(i)
+                            neighboringDistricts.add(district.getString("name"))
+                        }
+                    }
+
+                    // Display neighboring districts as a Toast
+                    runOnUiThread {
+                        if (neighboringDistricts.isNotEmpty()) {
+                            val districtNames = neighboringDistricts.joinToString("\n")
+                            Toast.makeText(this@WelcomeActivity, "Nearby Districts:\n$districtNames", Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(this@WelcomeActivity, "No neighboring districts found.", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(this@WelcomeActivity, "Error fetching data", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        })
+    }
+
+    private fun districtsFinder() {
+        // Coordinates for Guntur, India
+        val lat = 16.3067
+        val lon = 80.4365
+
+        // Fetch neighboring districts
+        networkManager.getNearbyDistricts(lat, lon) { districts ->
+            // Update UI with the result via Toast
+            runOnUiThread {
+                if (districts.isNotEmpty()) {
+                    val districtNames = districts.joinToString("\n")
+                    Toast.makeText(this, "Nearby Districts:\n$districtNames", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "No neighboring districts found.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
 
     private fun initiatePayment() {
         val deviceContext = JSONObject().apply {
