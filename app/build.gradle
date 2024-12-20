@@ -11,11 +11,10 @@ android {
 
     defaultConfig {
         applicationId "com.gsggroups.poultrymarket"
-        minSdk 24
+        minSdkVersion 26
         targetSdk 34
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -78,4 +77,7 @@ dependencies {
     implementation libs.androidx.lifecycle.runtime.ktx.v261
     implementation libs.firebase.messaging
     implementation libs.google.firebase.analytics
+    implementation libs.poi
+    implementation libs.poi.ooxml
+    implementation libs.material.v180
 }

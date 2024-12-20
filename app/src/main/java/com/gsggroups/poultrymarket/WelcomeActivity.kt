@@ -1,5 +1,6 @@
 package com.gsggroups.poultrymarket
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -8,9 +9,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Base64
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,7 +24,9 @@ import androidx.cardview.widget.CardView
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
+import com.gsggroups.poultrymarket.AdminAppScreens.AdminAppDashBoard
 import com.gsggroups.poultrymarket.Common.NetworkManager
+import com.gsggroups.poultrymarket.Common.NotificationUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Employement.EmployementDashboard
@@ -42,6 +49,7 @@ class WelcomeActivity : AppCompatActivity() {
     private lateinit var paymentLauncher: ActivityResultLauncher<Intent>
     private val networkManager = NetworkManager()
     private val client = OkHttpClient()
+    private lateinit var adminAccessButton: TextView
 
     companion object {
         const val DEBIT_REQUEST_CODE = 1001 // Request code for transaction
@@ -50,6 +58,7 @@ class WelcomeActivity : AppCompatActivity() {
     }
 
 
+    @SuppressLint("HardwareIds")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Check if the user is signed in
@@ -61,49 +70,10 @@ class WelcomeActivity : AppCompatActivity() {
             setContentView(R.layout.activity_welcome)
         }
 
-
         // Fetch FCM Token
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("WelcomeActivity", "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-
-            // Display the token in a Toast message
-            Toast.makeText(baseContext, "FCM Token: $token", Toast.LENGTH_LONG).show()
-
-            // Copy the token to clipboard
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("FCM Token", token)
-            clipboard.setPrimaryClip(clip)
-
-            // Show a Toast saying the token is copied
-            Toast.makeText(baseContext, "FCM Token copied to clipboard", Toast.LENGTH_SHORT).show()
-
-            // Share the token via WhatsApp or any other app
-            val sendIntent: Intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, "FCM Token: $token")
-                type = "text/plain"
-            }
-
-            // Check if WhatsApp is installed and share the token
-            val packageManager = packageManager
-            val sendIntentToWhatsApp = sendIntent.setPackage("com.whatsapp")
-            val resolveInfo = packageManager.queryIntentActivities(sendIntentToWhatsApp, PackageManager.MATCH_DEFAULT_ONLY)
-            if (resolveInfo.isNotEmpty()) {
-                startActivity(sendIntent)
-            } else {
-                // If WhatsApp is not installed, fall back to generic share dialog
-                startActivity(Intent.createChooser(sendIntent, "Share FCM Token"))
-            }
-        })
-
-
-
+        firebaseCaller()
+        NotificationUtils.checkNotificationStatus(this)
+        adminButtonCaller()
 
         // Get references to the cards
         val cardFarmer = findViewById<CardView>(R.id.cardFarmer1)
@@ -157,6 +127,66 @@ class WelcomeActivity : AppCompatActivity() {
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
             startActivity(intent)
         }
+    }
+
+    @SuppressLint("HardwareIds")
+    fun adminButtonCaller() {
+        adminAccessButton = findViewById<TextView>(R.id.admin_access)
+        val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
+        Toast.makeText(this, "Device ANDROID_ID: $androidId", Toast.LENGTH_LONG).show()
+        val allowedDevices = listOf("586004c41cf82bb4", "af8bef07725d5a9c", "3348d76df741af4a")
+
+        if (allowedDevices.contains(androidId)) {
+            adminAccessButton.visibility = View.VISIBLE
+            adminAccessButton.setOnClickListener {
+                val intent = Intent(this, AdminAppDashBoard::class.java)
+                startActivity(intent)
+            }
+        } else {
+            adminAccessButton.visibility = View.GONE
+        }
+    }
+
+    fun firebaseCaller() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("WelcomeActivity", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Display the token in a Toast message
+//            Toast.makeText(baseContext, "FCM Token: $token", Toast.LENGTH_LONG).show()
+
+            // Copy the token to clipboard
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("FCM Token", token)
+            clipboard.setPrimaryClip(clip)
+
+            // Show a Toast saying the token is copied
+//            Toast.makeText(baseContext, "FCM Token copied to clipboard", Toast.LENGTH_SHORT).show()
+
+            // Share the token via WhatsApp or any other app
+//            val sendIntent: Intent = Intent().apply {
+//                action = Intent.ACTION_SEND
+//                putExtra(Intent.EXTRA_TEXT, "FCM Token: $token")
+//                type = "text/plain"
+//            }
+
+            // Check if WhatsApp is installed and share the token
+//            val packageManager = packageManager
+//            val sendIntentToWhatsApp = sendIntent.setPackage("com.whatsapp")
+//            val resolveInfo = packageManager.queryIntentActivities(sendIntentToWhatsApp, PackageManager.MATCH_DEFAULT_ONLY)
+//            if (resolveInfo.isNotEmpty()) {
+//                startActivity(sendIntent)
+//            } else {
+//                // If WhatsApp is not installed, fall back to generic share dialog
+//                startActivity(Intent.createChooser(sendIntent, "Share FCM Token"))
+//            }
+        })
     }
 
     fun setupPaymentInputs() {
