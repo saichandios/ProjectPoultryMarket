@@ -14,6 +14,7 @@ buildscript {
         classpath libs.google.services
         classpath libs.gradle.v810
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath libs.google.services.v440
     }
 }
 

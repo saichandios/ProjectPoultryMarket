@@ -76,4 +76,6 @@ dependencies {
     implementation libs.okhttp
     implementation libs.kotlinx.coroutines.android
     implementation libs.androidx.lifecycle.runtime.ktx.v261
+    implementation libs.firebase.messaging
+    implementation libs.google.firebase.analytics
 }

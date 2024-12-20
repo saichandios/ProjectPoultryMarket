@@ -1,20 +1,25 @@
 package com.gsggroups.poultrymarket
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.gsggroups.poultrymarket.Common.NetworkManager
-import com.gsggroups.poultrymarket.Common.NominatimApiClient
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Employement.EmployementDashboard
@@ -57,6 +62,45 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
 
+        // Fetch FCM Token
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("WelcomeActivity", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Display the token in a Toast message
+            Toast.makeText(baseContext, "FCM Token: $token", Toast.LENGTH_LONG).show()
+
+            // Copy the token to clipboard
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("FCM Token", token)
+            clipboard.setPrimaryClip(clip)
+
+            // Show a Toast saying the token is copied
+            Toast.makeText(baseContext, "FCM Token copied to clipboard", Toast.LENGTH_SHORT).show()
+
+            // Share the token via WhatsApp or any other app
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, "FCM Token: $token")
+                type = "text/plain"
+            }
+
+            // Check if WhatsApp is installed and share the token
+            val packageManager = packageManager
+            val sendIntentToWhatsApp = sendIntent.setPackage("com.whatsapp")
+            val resolveInfo = packageManager.queryIntentActivities(sendIntentToWhatsApp, PackageManager.MATCH_DEFAULT_ONLY)
+            if (resolveInfo.isNotEmpty()) {
+                startActivity(sendIntent)
+            } else {
+                // If WhatsApp is not installed, fall back to generic share dialog
+                startActivity(Intent.createChooser(sendIntent, "Share FCM Token"))
+            }
+        })
 
 
 
@@ -135,59 +179,6 @@ class WelcomeActivity : AppCompatActivity() {
 //            }
 //        }
 //    }
-
-    private fun geoNames() {
-        val lat = 16.3067
-        val lon = 80.4365
-        val username = "saichandgeo" // Replace with your GeoNames username
-
-        // GeoNames API URL for nearby districts
-        val url = "http://api.geonames.org/neighboursJSON?lat=$lat&lng=$lon&username=$username"
-
-        val request = Request.Builder()
-            .url(url)
-            .build()
-
-        // Make the API call
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(this@WelcomeActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val responseBody = response.body?.string()
-                    val jsonResponse = responseBody?.let { JSONObject(it) }
-                    val neighboringDistricts = mutableListOf<String>()
-
-                    // Get neighboring districts
-                    val neighbours = jsonResponse?.getJSONArray("geonames")
-                    if (neighbours != null) {
-                        for (i in 0 until neighbours.length()) {
-                            val district = neighbours.getJSONObject(i)
-                            neighboringDistricts.add(district.getString("name"))
-                        }
-                    }
-
-                    // Display neighboring districts as a Toast
-                    runOnUiThread {
-                        if (neighboringDistricts.isNotEmpty()) {
-                            val districtNames = neighboringDistricts.joinToString("\n")
-                            Toast.makeText(this@WelcomeActivity, "Nearby Districts:\n$districtNames", Toast.LENGTH_LONG).show()
-                        } else {
-                            Toast.makeText(this@WelcomeActivity, "No neighboring districts found.", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                } else {
-                    runOnUiThread {
-                        Toast.makeText(this@WelcomeActivity, "Error fetching data", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        })
-    }
 
     private fun districtsFinder() {
         // Coordinates for Guntur, India

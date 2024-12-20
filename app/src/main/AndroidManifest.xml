@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <meta-data
         android:name="com.phonepe.android.sdk.isUAT"
@@ -31,6 +32,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProjectC"
         tools:targetApi="31">
+        <service
+            android:name=".Common.MyFirebaseMessagingService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".SubscriptionMode"
             android:exported="false" />

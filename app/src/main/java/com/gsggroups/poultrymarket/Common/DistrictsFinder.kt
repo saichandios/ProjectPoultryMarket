@@ -17,8 +17,7 @@ class NetworkManager {
     fun getNearbyDistricts(lat: Double, lon: Double, callback: (List<String>) -> Unit) {
         // Overpass API URL
 //        val overpassUrl = "http://overpass-api.de/api/interpreter"
-        val lat = 17.387140
-        val lon = 78.491684
+
         val radius = 50000
 
         // OpenStreetMap Overpass API URL
