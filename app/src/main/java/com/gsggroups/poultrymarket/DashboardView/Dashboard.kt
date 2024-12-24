@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -85,6 +86,16 @@ class Dashboard : AppCompatActivity() {
             handleNavigationItemSelected(menuItem)
             true
         }
+        val userRole = SharedPreferencesManager.getUserRole(this)
+        val menu = navView.menu
+        val navBatchReadyItem: MenuItem = menu.findItem(R.id.nav_BatchReady)
+            if (userRole == "Farmer") {
+                navBatchReadyItem.title = "Batch Ready"
+            } else if (userRole == "Trader") {
+                navBatchReadyItem.title = "Need Load"
+            } else {
+                navBatchReadyItem.title = "Need Load"
+            }
 
 
         // Handle Hamburger Icon click to open drawer
@@ -93,7 +104,7 @@ class Dashboard : AppCompatActivity() {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
-        val userRole = SharedPreferencesManager.getUserRole(this)
+
         if (userRole != null) {
             val tabs = getTabsBasedOnUserRole(userRole)
             navigateToTablayoutFragment(tabs.first, tabs.second)
@@ -149,7 +160,52 @@ class Dashboard : AppCompatActivity() {
             }
         }
 
+        if (userRole != null) {
+            setTextViewBasedOnRole(userRole, load_textView, going_textView, load_switch, going_switch)
+        }
+
+
     }
+
+    fun setTextViewBasedOnRole(
+        role: String,
+        loadTextView: TextView,
+        goingTextView: TextView,
+        loadSwitch: Switch,
+        goingSwitch: Switch
+    ) {
+        when (role) {
+            "Farmer" -> {
+                    // For Farmer: If status is Batch Ready
+                    loadTextView.text = "Batch Ready"
+                    loadTextView.visibility = View.VISIBLE
+                    loadSwitch.visibility = View.VISIBLE
+                    goingTextView.visibility = View.GONE
+                    goingSwitch.visibility = View.GONE
+            }
+            "Trader" -> {
+                    // For Trader: If status is Need Load
+                loadTextView.text = "Need Load"
+                loadTextView.visibility = View.VISIBLE
+                    loadSwitch.visibility = View.VISIBLE
+                    goingTextView.visibility = View.VISIBLE
+                    goingSwitch.visibility = View.VISIBLE
+
+            }
+            "Shopkeeper" -> {
+                    // For Shopkeeper: If status is Need Load
+                loadTextView.text = "Need Load"
+                loadTextView.visibility = View.VISIBLE
+                    loadSwitch.visibility = View.VISIBLE
+                    goingTextView.visibility = View.GONE
+                    goingSwitch.visibility = View.GONE
+            }
+            else -> {
+                // Default case for other roles
+            }
+        }
+    }
+
 
     fun navigateToTablayoutFragment(titles: List<String>, fragmentIdentifiers: List<String>) {
         val fragmentTag = "TablayoutFragment" // Unique tag for this fragment
@@ -206,9 +262,9 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun handleNavigationItemSelected(menuItem: MenuItem) {
+        val userRole = SharedPreferencesManager.getUserRole(this)
         val selectedFragment: Fragment = when (menuItem.itemId) {
             R.id.nav_List -> {
-                val userRole = SharedPreferencesManager.getUserRole(this)
                 val tabs = userRole?.let { getTabsBasedOnUserRole(it) }
                 if (tabs != null) {
                     navigateToTablayoutFragment(tabs.first, tabs.second)
