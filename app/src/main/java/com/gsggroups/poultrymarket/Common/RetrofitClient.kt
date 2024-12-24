@@ -43,7 +43,7 @@ object RetrofitClient {
         .hostnameVerifier { _, _ -> true }
         .build()
 
-    const val BASE_URL = "http://localhost:16490/api/"
+    const val BASE_URL = "http://localhost:5206/"
 
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()

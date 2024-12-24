@@ -158,7 +158,11 @@ data class UserModel(
 
     //testing
     val role: String,
-    val detail: String
+    val detail: String,
+    val detail2: String,
+    val status: String,
+    var colorTemp: String = "bgColor"
+
 )
 
 data class PropertyModel(

@@ -4,5 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bgColor">#FAE89B</color>
     <color name="bgButtonColor">#FF6347</color>
-    <color name="red">#FF0000</color>
+    <color name="red">#FF6666</color>
+    <color name="green">#32CD32</color>
+    <color name="orange">#FFA836</color>
+    <color name="gray">#808080</color>
 </resources>

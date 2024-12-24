@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#EBE8E8"
+        android:id="@+id/colorBorderLayout"
         android:orientation="vertical">
 
         <!-- Top 10dp Border (Header) -->
@@ -39,7 +40,7 @@
                 android:id="@+id/tvKmsCalculated"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="34 kms"
+                android:text=""
                 android:textColor="@android:color/black"
                 android:textSize="14sp"/>
         </LinearLayout>
@@ -56,7 +57,7 @@
                 android:id="@+id/ivIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/baseline_home_24"
+                android:src="@drawable/animal"
                 android:layout_marginEnd="8dp"/>
 
             <!-- Right: Name, Farm, City Text -->
@@ -71,29 +72,50 @@
                     android:id="@+id/tvName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="John Doe"
+                    android:text="Name: John Doe"
                     android:textColor="@android:color/black"
                     android:textStyle="bold"
                     android:textSize="16sp"/>
 
                 <!-- Farm Text -->
                 <TextView
-                    android:id="@+id/tvFarm"
+                    android:id="@+id/tvProperty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sunny Farm"
+                    android:text="Farm Name: Test Farm"
                     android:textColor="#37342E"
                     android:textSize="14sp"
                     android:layout_marginTop="4dp"/>
 
-                <!-- City Text -->
+                <!-- state Text -->
                 <TextView
-                    android:id="@+id/tvCity"
+                    android:id="@+id/tvState"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="New York"
+                    android:text="State: AP"
                     android:textColor="#37342E"
                     android:textSize="14sp"
+                    android:layout_marginTop="4dp"/>
+
+                <!-- district Text -->
+                <TextView
+                    android:id="@+id/tvDistrict"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="District: Guntur"
+                    android:textColor="#37342E"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"/>
+
+                <!-- status Text -->
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status: Batch Ready"
+                    android:textColor="#37342E"
+                    android:textSize="14sp"
+                    android:textStyle="bold|italic"
                     android:layout_marginTop="4dp"/>
             </LinearLayout>
 

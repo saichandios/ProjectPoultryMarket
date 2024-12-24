@@ -81,9 +81,13 @@ class TraderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Sample data for demonstration
         userList = arrayListOf(
-            UserModel(role = "Shopkeeper", name = "Shopkeeper 1", detail = "Details about Shopkeeper 1")
+            UserModel(role = "Trader", name = "Trader 123", detail = "State: Andhra Pradesh",
+                detail2 = "District: Guntur", status = "Status: Need Load"),
+            UserModel(role = "Trader", name = "SS1232", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "Status: Need Load"),
+            UserModel(role = "Trader", name = "new Trader", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "")
         )
 
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -98,6 +102,15 @@ class TraderFragment : Fragment() {
                 putExtra("detail", person.detail)
             }
             startActivity(intent)
+        }
+        userList.forEach { user ->
+            // Normalize and check the status
+            val trimmedStatus = user.status.trim().replace("\\s+".toRegex(), " ")
+            if (trimmedStatus.contains("Need Load", ignoreCase = true)) {
+                user.colorTemp = "red" // Assign the color
+            } else {
+                user.colorTemp = "orange"
+            }
         }
         recyclerView.adapter = personAdapter
 

@@ -7,6 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import Person
 import android.annotation.SuppressLint
+import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import com.gsggroups.poultrymarket.Model.UserModel
 import com.gsggroups.poultrymarket.R
 
@@ -48,15 +50,36 @@ class RecyclerAdapter(private var userList: ArrayList<UserModel>,
 
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         fun bind(user: UserModel, clickListener: (UserModel) -> Unit) {
+
+            val topBorder = itemView.findViewById<LinearLayout>(R.id.top_border_layout)
+            val colorResId = itemView.context.resources.getIdentifier(
+                user.colorTemp, // `colorTemp` should match a color name in `colors.xml`
+                "color", // Resource type should be "color", not the color name
+                itemView.context.packageName
+            )
+            val color = if (colorResId != 0) {
+                ContextCompat.getColor(itemView.context, colorResId)
+            } else {
+                ContextCompat.getColor(itemView.context, R.color.orange)
+            }
+            topBorder.setBackgroundColor(color)
+
             val roleText = itemView.findViewById<TextView>(R.id.tvHeading)
-            roleText.text = user.roleID.toString()
+            roleText.text = user.role
 
             val nameText = itemView.findViewById<TextView>(R.id.tvName)
             nameText.text = user.name
 
-            val detailText = itemView.findViewById<TextView>(R.id.tvCity)
-            detailText.text = user.mobileNumber
+            val farmText = itemView.findViewById<TextView>(R.id.tvProperty)
 
+            val detailText = itemView.findViewById<TextView>(R.id.tvState)
+            detailText.text = user.detail
+
+            val detail2Text = itemView.findViewById<TextView>(R.id.tvDistrict)
+            detail2Text.text = user.detail2
+            val statusText = itemView.findViewById<TextView>(R.id.tvStatus)
+            statusText.text = user.status
+            statusText.setTextColor(color)
             itemView.setOnClickListener {
                 clickListener(user) // Invoke the click listener when item is clicked
             }

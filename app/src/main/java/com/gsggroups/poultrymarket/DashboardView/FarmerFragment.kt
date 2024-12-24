@@ -8,11 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.CustomAlertDialog
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
@@ -88,7 +90,12 @@ class FarmerFragment : Fragment() {
 
         // Sample data for demonstration
         userList = arrayListOf(
-            UserModel(role = "Shopkeeper", name = "Shopkeeper 1", detail = "Details about Shopkeeper 1")
+            UserModel(role = "Farmer", name = "Farmer 123", detail = "State: Andhra Pradesh",
+            detail2 = "District: Guntur", status = "Status: Batch Ready"),
+            UserModel(role = "Farmer", name = "SS1232", detail = "State: Telangana",
+            detail2 = "District: RangaReddy", status = "Status: Batch not available"),
+            UserModel(role = "Farmer", name = "new farmer", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "Status: Batch Ready")
         )
 
         stateSpinner = view.findViewById(R.id.state_dropdown)
@@ -106,10 +113,22 @@ class FarmerFragment : Fragment() {
             }
             startActivity(intent)
         }
+        userList.forEach { user ->
+            // Normalize and check the status
+            val trimmedStatus = user.status.trim().replace("\\s+".toRegex(), " ")
+            if (trimmedStatus.contains("Batch Ready", ignoreCase = true)) {
+                user.colorTemp = "green" // Assign the color
+            } else {
+                user.colorTemp = "orange"
+            }
+        }
+
         recyclerView.adapter = personAdapter
 
         searchView = view.findViewById(R.id.searchView)
         setupSearchView()
+
+
 
         filterButton.setOnClickListener {
             //Api call
