@@ -62,13 +62,13 @@ class AllEmployersFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Sample data for demonstration
-        personList = arrayListOf(
-            Person("Farmer","Saichand", "Need Cutter"),
-            Person("Trader","Gopi", "Need Driver"),
-            Person("ShopKeeper","Ganapti", "Need Cutter"),
-            Person(role = "Farmer", name = "Farmer 1", detail = "Need Supervisor"),
-            Person(role = "Trader", name = "Trader 2", detail = "Need Driver"),
-            Person(role = "ShopKeeper", name = "ShopKeeper 3", detail = "Need Cutter")
+        employerList = arrayListOf(
+            UserModel(role = "Farmer", name = "Employer 6", detail = "State: Andhra Pradesh",
+                detail2 = "District: Guntur", status = ""),
+            UserModel(role = "Trader", name = "Employer 1234", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = ""),
+            UserModel(role = "Trader", name = "new Employer", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "")
         )
 
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
