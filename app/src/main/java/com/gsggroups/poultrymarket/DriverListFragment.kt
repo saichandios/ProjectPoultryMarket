@@ -61,13 +61,13 @@ class DriverListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Sample data for demonstration
-        personList = arrayListOf(
-            Person("Driver","Saichand", "Bapatla"),
-            Person("Driver","Gopi", "Repalle"),
-            Person("Driver","Ganapti", "Bapatla"),
-            Person(role = "Driver", name = "Driver 1", detail = "Details    Driver 1"),
-            Person(role = "Driver", name = "Driver 2", detail = "Details Driver 2"),
-            Person(role = "Driver", name = "Driver 3", detail = "Details  Driver 3")
+        userList = arrayListOf(
+            UserModel(role = "Driver", name = "Cutter 123", detail = "State: Andhra Pradesh",
+                detail2 = "District: Guntur", status = ""),
+            UserModel(role = "Driver", name = "SS1232", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = ""),
+            UserModel(role = "Driver", name = "new Cutter", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "Need Job")
         )
 
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -82,6 +82,17 @@ class DriverListFragment : Fragment() {
             }
             startActivity(intent)
         }
+
+        userList.forEach { user ->
+            // Normalize and check the status
+            val trimmedStatus = user.status.trim().replace("\\s+".toRegex(), " ")
+            if (trimmedStatus.contains("Need Job", ignoreCase = true)) {
+                user.colorTemp = "green" // Assign the color
+            } else {
+                user.colorTemp = "orange"
+            }
+        }
+
         recyclerView.adapter = personAdapter
 
         searchView = view.findViewById(R.id.driver_searchView)

@@ -61,13 +61,13 @@ class CutterListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Sample data for demonstration
-        personList = arrayListOf(
-            Person("Cutter","Saichand", "Bapatla"),
-            Person("Cutter","Gopi", "Repalle"),
-            Person("Cutter","Ganapti", "Bapatla"),
-            Person(role = "Cutter", name = "Cutter 1", detail = "Details    Cutter 1"),
-            Person(role = "Cutter", name = "Cutter 2", detail = "Details Cutter 2"),
-            Person(role = "Cutter", name = "Cutter 3", detail = "Details  Cutter 3")
+        userList = arrayListOf(
+            UserModel(role = "Cutter", name = "Cutter 123", detail = "State: Andhra Pradesh",
+                detail2 = "District: Guntur", status = ""),
+            UserModel(role = "Cutter", name = "SS1232", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = ""),
+            UserModel(role = "Cutter", name = "new Cutter", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "Need Job")
         )
 
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -82,6 +82,17 @@ class CutterListFragment : Fragment() {
             }
             startActivity(intent)
         }
+
+        userList.forEach { user ->
+            // Normalize and check the status
+            val trimmedStatus = user.status.trim().replace("\\s+".toRegex(), " ")
+            if (trimmedStatus.contains("Need Job", ignoreCase = true)) {
+                user.colorTemp = "green" // Assign the color
+            } else {
+                user.colorTemp = "orange"
+            }
+        }
+
         recyclerView.adapter = personAdapter
 
         searchView = view.findViewById(R.id.cutter_searchView)
@@ -124,8 +135,6 @@ class CutterListFragment : Fragment() {
                 }
             }
     }
-
-
 
     private fun getCutterList() {
         val farmerRequest = ListRoleRequest(

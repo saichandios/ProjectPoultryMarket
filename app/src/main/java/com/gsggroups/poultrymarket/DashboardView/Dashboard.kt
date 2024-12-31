@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import com.google.android.material.navigation.NavigationView
 import android.widget.ImageView
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -37,6 +39,7 @@ import com.gsggroups.poultrymarket.NeedEmployee
 import com.gsggroups.poultrymarket.NotificationTabLayoutFragment
 import com.gsggroups.poultrymarket.RegisterSingup
 import com.gsggroups.poultrymarket.TablayoutFragment
+import com.gsggroups.poultrymarket.UserInfo
 
 
 class Dashboard : AppCompatActivity() {
@@ -110,6 +113,17 @@ class Dashboard : AppCompatActivity() {
             navigateToTablayoutFragment(tabs.first, tabs.second)
         }
 
+        //------------------------------------------------
+        val userInfoLayout = UserInfo(this)
+        userInfoLayout.updateUserInfo(
+            userName = "User 1",
+            userEmail = "1234567890",
+            userImage = ContextCompat.getDrawable(this, R.drawable.profile_side),
+        )
+        userInfoLayout.view.setPadding(30, 20, 0, 0)
+        navView.addHeaderView(userInfoLayout.view)
+
+
         //-----------------------------------------------------------------
        load_switch = findViewById(R.id.toolbar_switch1)
        load_textView = findViewById(R.id.toolbar_switch1_text)
@@ -163,8 +177,6 @@ class Dashboard : AppCompatActivity() {
         if (userRole != null) {
             setTextViewBasedOnRole(userRole, load_textView, going_textView, load_switch, going_switch)
         }
-
-
     }
 
     fun setTextViewBasedOnRole(
@@ -185,8 +197,8 @@ class Dashboard : AppCompatActivity() {
             }
             "Trader" -> {
                     // For Trader: If status is Need Load
-                loadTextView.text = "Need Load"
-                loadTextView.visibility = View.VISIBLE
+                    loadTextView.text = "Need Load"
+                    loadTextView.visibility = View.VISIBLE
                     loadSwitch.visibility = View.VISIBLE
                     goingTextView.visibility = View.VISIBLE
                     goingSwitch.visibility = View.VISIBLE
@@ -194,8 +206,8 @@ class Dashboard : AppCompatActivity() {
             }
             "Shopkeeper" -> {
                     // For Shopkeeper: If status is Need Load
-                loadTextView.text = "Need Load"
-                loadTextView.visibility = View.VISIBLE
+                    loadTextView.text = "Need Load"
+                    loadTextView.visibility = View.VISIBLE
                     loadSwitch.visibility = View.VISIBLE
                     goingTextView.visibility = View.GONE
                     goingSwitch.visibility = View.GONE

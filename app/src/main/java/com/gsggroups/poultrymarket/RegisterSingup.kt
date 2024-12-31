@@ -197,8 +197,8 @@ class RegisterSingup: AppCompatActivity() {
                         }
                         "Employee" -> {
                             val intent = Intent(this, EmployementDashboard::class.java)
-                            if (validateInputs()) {
-                                SharedPreferencesManager.saveSignedIn(this, true)
+                            if (!validateInputs()) {
+//                                SharedPreferencesManager.saveSignedIn(this, true)
                                 SharedPreferencesManager.saveUserRole(context = this, "Employee")
                                 startActivity(intent)
                             } else {

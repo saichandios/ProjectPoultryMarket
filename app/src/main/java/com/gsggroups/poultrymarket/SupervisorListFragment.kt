@@ -61,13 +61,13 @@ class SupervisorListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Sample data for demonstration
-        personList = arrayListOf(
-            Person("Supervisor","Saichand", "Bapatla"),
-            Person("Supervisor","Gopi", "Repalle"),
-            Person("Supervisor","Ganapti", "Bapatla"),
-            Person(role = "Supervisor", name = "Supervisor 1", detail = "Details    Supervisor 1"),
-            Person(role = "Supervisor", name = "Supervisor 2", detail = "Details Supervisor 2"),
-            Person(role = "Supervisor", name = "Supervisor 3", detail = "Details  Supervisor 3")
+        userList = arrayListOf(
+            UserModel(role = "Driver", name = "Cutter 123", detail = "State: Andhra Pradesh",
+                detail2 = "District: Guntur", status = ""),
+            UserModel(role = "Driver", name = "SS1232", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = ""),
+            UserModel(role = "Driver", name = "new Cutter", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "Need Job")
         )
 
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -81,6 +81,15 @@ class SupervisorListFragment : Fragment() {
                 putExtra("detail", person.mobileNumber)
             }
             startActivity(intent)
+        }
+        userList.forEach { user ->
+            // Normalize and check the status
+            val trimmedStatus = user.status.trim().replace("\\s+".toRegex(), " ")
+            if (trimmedStatus.contains("Need Job", ignoreCase = true)) {
+                user.colorTemp = "green" // Assign the color
+            } else {
+                user.colorTemp = "orange"
+            }
         }
         recyclerView.adapter = personAdapter
 

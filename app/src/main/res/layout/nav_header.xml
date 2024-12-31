@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:layout_marginTop="16dp"
     android:layout_marginStart="16dp"
+    android:id="@+id/nav_header"
     android:background="@color/white">
 
     <ImageView
@@ -20,13 +21,14 @@
         android:id="@+id/user_name"
         android:paddingTop="8dp"
         android:textSize="20dp"
-        android:text="Profile Name"
+        android:text="User Name"
         android:textColor="@color/black"
         android:textStyle="bold"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16dp"
+        android:id="@+id/user_mobile"
         android:text="gsg@gmail.com"/>
     <View
         android:layout_width="match_parent"
