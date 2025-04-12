@@ -1,5 +1,6 @@
 package com.gsggroups.poultrymarket.DashboardView
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
@@ -57,6 +58,7 @@ class Dashboard : AppCompatActivity() {
 
     private lateinit var loader: LoaderUtils
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)

@@ -88,8 +88,8 @@ class WelcomeActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterSingup::class.java)
             val userRole = "Farmer" // This value would be determined dynamically
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
-            districtsFinder()
-//            startActivity(intent)
+//            districtsFinder()
+            startActivity(intent)
 //            finish() // Close Welcome page
 //            initiatePayment()
 //            launchPhonePe()
@@ -98,7 +98,7 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         cardTrader.setOnClickListener {
-            Toast.makeText(this, "Trader Card Clicked", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, "Trader Card Clicked", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, RegisterSingup::class.java)
             val userRole = "Trader" // This value would be determined dynamically
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
@@ -106,7 +106,7 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         cardShopkeeper.setOnClickListener {
-            Toast.makeText(this, "Shopkeeper Card Clicked", Toast.LENGTH_LONG).show()
+//            Toast.makeText(this, "Shopkeeper Card Clicked", Toast.LENGTH_LONG).show()
             val intent = Intent(this, RegisterSingup::class.java)
             val userRole = "Shopkeeper" // This value would be determined dynamically
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
@@ -114,18 +114,19 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         cardEmployement.setOnClickListener {
-            Toast.makeText(this, "Employment Card Clicked", Toast.LENGTH_LONG).show()
-            val intent = Intent(this, RegisterSingup::class.java)
-            val userRole = "Employee" // Employment = Employee
-            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
-            startActivity(intent)
+            Toast.makeText(this, "Comming Soon", Toast.LENGTH_LONG).show()
+//            val intent = Intent(this, RegisterSingup::class.java)
+//            val userRole = "Employee" // Employment = Employee
+//            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
+//            startActivity(intent)
         }
 
         ratesCapsule.setOnClickListener {
-            val intent = Intent(this, WelcomeRates:: class.java)
-            val userRole = "Rates" // Employment = Employee
-            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
-            startActivity(intent)
+            Toast.makeText(this, "Comming Soon", Toast.LENGTH_LONG).show()
+//            val intent = Intent(this, WelcomeRates:: class.java)
+//            val userRole = "Rates" // Employment = Employee
+//            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
+//            startActivity(intent)
         }
     }
 
@@ -134,7 +135,7 @@ class WelcomeActivity : AppCompatActivity() {
         adminAccessButton = findViewById<TextView>(R.id.admin_access)
         val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
-        Toast.makeText(this, "Device ANDROID_ID: $androidId", Toast.LENGTH_LONG).show()
+//        Toast.makeText(this, "Device ANDROID_ID: $androidId", Toast.LENGTH_LONG).show()
         val allowedDevices = listOf("586004c41cf82bb4", "af8bef07725d5a9c", "3348d76df741af4a")
 
         if (allowedDevices.contains(androidId)) {
@@ -162,9 +163,9 @@ class WelcomeActivity : AppCompatActivity() {
 //            Toast.makeText(baseContext, "FCM Token: $token", Toast.LENGTH_LONG).show()
 
             // Copy the token to clipboard
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("FCM Token", token)
-            clipboard.setPrimaryClip(clip)
+//            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+//            val clip = ClipData.newPlainText("FCM Token", token)
+//            clipboard.setPrimaryClip(clip)
 
             // Show a Toast saying the token is copied
 //            Toast.makeText(baseContext, "FCM Token copied to clipboard", Toast.LENGTH_SHORT).show()

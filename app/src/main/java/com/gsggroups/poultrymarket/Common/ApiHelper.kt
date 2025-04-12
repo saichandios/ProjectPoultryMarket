@@ -19,10 +19,13 @@ object ApiHelper {
         onSuccess: (response: T) -> Unit,
         onFailure: (error: String) -> Unit
     ) {
-        val call = apiService.getData(url, params)
+        // Explicitly specify the response type in the API call
+        val call: Call<T> = apiService.getData(url, params)
         handleApiCall(call, responseType, onSuccess, onFailure)
     }
 
+
+    // Generic POST request
     // Generic POST request
     fun <T> post(
         url: String,
@@ -31,38 +34,42 @@ object ApiHelper {
         onSuccess: (response: T) -> Unit,
         onFailure: (error: String) -> Unit
     ) {
-        val call = apiService.postData(url, body)
+        // Call the POST method from ApiService, passing the body and URL
+        val call: Call<T> = apiService.postData(url, body)
         handleApiCall(call, responseType, onSuccess, onFailure)
     }
 
+
     // Common handler for all API calls
     private fun <T> handleApiCall(
-        call: Call<Any>,
+        call: Call<T>,  // Ensure the call is typed with T
         responseType: Class<T>,
         onSuccess: (response: T) -> Unit,
         onFailure: (error: String) -> Unit
     ) {
-        call.enqueue(object : Callback<Any> {
-            override fun onResponse(call: Call<Any>, response: Response<Any>) {
+        call.enqueue(object : Callback<T> {
+            override fun onResponse(call: Call<T>, response: Response<T>) {
                 if (response.isSuccessful) {
-                    try {
-                        val json = response.body().toString()
-                        val apiResponse = Gson().fromJson(json, responseType)
-                        onSuccess(apiResponse)
-                    } catch (e: Exception) {
-                        onFailure("JSON Parsing Error: ${e.localizedMessage}")
+                    val body = response.body()
+                    if (body != null) {
+                        onSuccess(body)  // Pass the parsed response
+                    } else {
+                        onFailure("Response body is null")
                     }
                 } else {
                     onFailure("Error: ${response.code()} - ${response.message()}")
                 }
             }
 
-            override fun onFailure(call: Call<Any>, t: Throwable) {
+            override fun onFailure(call: Call<T>, t: Throwable) {
                 Log.e("ApiHelper", "API call failed: ${t.message}")
                 onFailure(t.message ?: "Unknown error")
             }
         })
     }
+
+
+
 }
 
 

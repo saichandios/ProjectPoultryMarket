@@ -5,7 +5,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.QueryMap
 import retrofit2.http.Url
@@ -20,71 +19,29 @@ import javax.net.ssl.X509TrustManager
 
 object RetrofitClient {
 
-    // Create a TrustManager that accepts all certificates
-    val trustAllCertificates: X509TrustManager = object : X509TrustManager {
-        override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-        override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-    }
+    // Base URL for your API
+    const val BASE_URL = "https://poultrymarket.xyz/"
 
-    // Create SSLContext that uses the TrustManager to accept all certificates
-    val sslContext: SSLContext = try {
-        SSLContext.getInstance("TLS").apply {
-            init(null, arrayOf(trustAllCertificates), java.security.SecureRandom())
-        }
-    } catch (e: NoSuchAlgorithmException) {
-        throw RuntimeException("Error creating SSLContext", e)
-    } catch (e: KeyManagementException) {
-        throw RuntimeException("Error initializing SSLContext", e)
-    }
+    // OkHttpClient without SSL configurations (default settings)
+    private val okHttpClient = OkHttpClient.Builder()
+        .build()  // No custom SSL handling
 
-    val okHttpClient = OkHttpClient.Builder()
-        .sslSocketFactory(sslContext.socketFactory, trustAllCertificates)
-        .hostnameVerifier { _, _ -> true }
-        .build()
-
-    const val BASE_URL = "http://localhost:5206/"
-
+    // Retrofit instance
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient) // Use default OkHttpClient
+            .addConverterFactory(GsonConverterFactory.create()) // Gson converter for JSON parsing
             .build()
     }
-
-    private fun getUnsafeOkHttpClient(): OkHttpClient {
-        val trustAllCerts = arrayOf<TrustManager>(
-            object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-                override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {}
-                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> = arrayOf()
-            }
-        )
-
-        val sslContext = SSLContext.getInstance("SSL")
-        sslContext.init(null, trustAllCerts, java.security.SecureRandom())
-        val sslSocketFactory = sslContext.socketFactory
-
-        return OkHttpClient.Builder()
-            .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { _, _ -> true }
-            .build()
-    }
-
 }
-
-
 
 
 interface ApiService {
 
     @GET
-    fun getData(@Url url: String, @QueryMap params: Map<String, String>): Call<Any>
+    fun <T> getData(@Url url: String, @QueryMap params: Map<String, String>): Call<T>
 
     @POST
-    fun postData(@Url url: String, @Body body: Any): Call<Any>
-
-    @PATCH
-    fun patchData(@Url url: String, @Body body: Any): Call<Any>
+    fun <T> postData(@Url url: String, @Body body: Any): Call<T>
 }

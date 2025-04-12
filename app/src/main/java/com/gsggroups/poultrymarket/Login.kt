@@ -1,5 +1,6 @@
 package com.gsggroups.poultrymarket
 
+import LoginResponse
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +19,7 @@ import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.RetrofitClient
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.ApiResponse
+import com.gsggroups.poultrymarket.Model.LoginRequest
 import org.json.JSONObject
 
 class Login : AppCompatActivity() {
@@ -104,23 +106,25 @@ class Login : AppCompatActivity() {
         return pin.length == 4 && pin.all { it.isDigit() }
     }
 
+
     fun loginUser(mobile: String, pin: String) {
         loader.show()
-        val url = "${baseUrl}loginUser"
-        val params = mapOf("mobile" to mobile, "pin" to pin)
+        val loginRequest = LoginRequest(
+            mobileNumber = mobile,
+            pin = pin
+        )
 
-        ApiHelper.get(
-            url = url,
-            params = params,
-            responseType = ApiResponse::class.java,
-            onSuccess = { response ->
+        ApiHelper.post(
+            url = "${baseUrl}loginUser",
+            body = loginRequest,
+            responseType = LoginResponse::class.java,
+            onSuccess = { apiResponse ->
                 loader.hide()
-                // Assuming the response is a LoginResponse or a similar data class
-                if (response is ApiResponse) {
-                    println("Login successful: ${response.message}")
-                    // You can store or use the response data here as needed
+                if (apiResponse.isSuccess) {
+                    val userItem = apiResponse.item
+                    println("User Name: ${userItem.name}")
                 } else {
-                    println("Unexpected response type")
+                    println("Login failed: ${apiResponse.message}")
                 }
             },
             onFailure = { error ->
@@ -135,6 +139,7 @@ class Login : AppCompatActivity() {
                     .show()
             }
         )
+
     }
 
     // Handle the back button click

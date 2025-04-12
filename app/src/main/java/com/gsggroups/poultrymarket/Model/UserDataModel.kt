@@ -187,3 +187,8 @@ data class RatesResponse(
 )
 
 
+data class LoginRequest(
+    val mobileNumber: String,
+    val pin: String
+)
+
