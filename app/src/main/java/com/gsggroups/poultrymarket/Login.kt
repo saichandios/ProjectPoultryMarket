@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.CustomAlertDialog
@@ -21,6 +22,11 @@ import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.ApiResponse
 import com.gsggroups.poultrymarket.Model.LoginRequest
 import org.json.JSONObject
+import com.google.gson.Gson
+import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
+import com.gsggroups.poultrymarket.Utils.ApiService
+import com.gsggroups.poultrymarket.base.ApiClient
+
 
 class Login : AppCompatActivity() {
     private val baseUrl = RetrofitClient.BASE_URL
@@ -28,7 +34,6 @@ class Login : AppCompatActivity() {
     private lateinit var pin: EditText
     private lateinit var forgotPassword: TextView
     private lateinit var loginButton: Button
-    private lateinit var registerButton: Button
 
     val loader = LoaderUtils(this)
 
@@ -40,17 +45,10 @@ class Login : AppCompatActivity() {
         pin = findViewById<EditText>(R.id.pinEditText)
         forgotPassword = findViewById<TextView>(R.id.forgot_password)
         loginButton = findViewById<Button>(R.id.loginButton)
-        registerButton = findViewById<Button>(R.id.registerButton)
 
         loginButton.setOnClickListener {
             hideKeyboard()
             validateInput()
-        }
-
-        registerButton.setOnClickListener {
-            hideKeyboard()
-            val intent = Intent(this@Login, WelcomeActivity::class.java)
-            startActivity(intent)
         }
 
         forgotPassword.setOnClickListener {
@@ -70,7 +68,7 @@ class Login : AppCompatActivity() {
         // Enable the back button
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.setTitle(Html.fromHtml("<font color='#000000'>Registration</font>"))
+//        supportActionBar?.setTitle(Html.fromHtml("<font color='#000000'>Registration</font>"))
     }
 
     private fun hideKeyboard() {
@@ -113,18 +111,36 @@ class Login : AppCompatActivity() {
             mobileNumber = mobile,
             pin = pin
         )
+        val call = ApiClient.retrofit
+            .create(ApiService::class.java)
+            .loginUser(loginRequest)
 
         ApiHelper.post(
-            url = "${baseUrl}loginUser",
-            body = loginRequest,
-            responseType = LoginResponse::class.java,
-            onSuccess = { apiResponse ->
-                loader.hide()
-                if (apiResponse.isSuccess) {
-                    val userItem = apiResponse.item
-                    println("User Name: ${userItem.name}")
+            endpointCall = call,
+            onSuccess = { response ->
+                if (response.isSuccess) {
+                    val userDetails = response.item.userID  // This gets the UserDetails object
+                    val userPropertList = response.item.properties  // This gets the UserDetails object
+                    val roleIDfromLogin = response.item.roleID  // This gets the UserDetails object
+                    val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime  // This gets the UserDetails object
+//                    if (userPropertList.isNotEmpty()) {
+//                        val firstPropertyId = userPropertList[0].propertyID
+//                        SharedPreferencesManager.savePropertyID(this, firstPropertyId)                    }
+//                    val userId = userDetails.userID
+//                    val roleId = userDetails.roleID
+//                    Log.d("Login", "User ID: $userId")
+
+                    //       intent.putExtra("getUserRequest", Gson().toJson(getUserListRequest))
+                    SharedPreferencesManager.saveUserID(this, userDetails)
+                    SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
+                    SharedPreferencesManager.saveLastSubmissionTime(this, batchReadyUpdatedDateTime)
+                    startActivity(Intent(this, Dashboard::class.java))
+                    finish()
+                    loader.hide()
                 } else {
-                    println("Login failed: ${apiResponse.message}")
+                    loader.hide()
+
+                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
                 }
             },
             onFailure = { error ->
@@ -136,10 +152,8 @@ class Login : AppCompatActivity() {
                         println("Login Alert Ok pressed: $error")
                     }
                     .showCancelButton(false)
-                    .show()
-            }
+                    .show()            }
         )
-
     }
 
     // Handle the back button click

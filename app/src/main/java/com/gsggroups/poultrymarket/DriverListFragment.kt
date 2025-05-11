@@ -139,52 +139,54 @@ class DriverListFragment : Fragment() {
 
     private fun getDriverList() {
         val farmerRequest = ListRoleRequest(
-            roleId = 0,
-            pageNumber = 0,
-            pageSize = 0,
-            search = "string",
-            sortColumn = "string",
-            sortDirection = "string",
-            stateId = 0,
-            districtId = 0,
-            batchReady = true,
-            needLoad = true,
-            goingForLoad = true
+            roleId = 1,
+            pageNumber = 1,
+            pageSize = 10,
+            search = "",
+            sortColumn = "",
+            sortDirection = "",
+            stateId = 1,
+            districtId = 1,
+            batchReady = false,
+            needLoad = false,
+            goingForLoad = false
         )
 
-        ApiHelper.post(
-            url = "getUserList",
-            body = farmerRequest,
-            responseType = ListResponseModel::class.java,
-            onSuccess = { response ->
-                if (response.isSuccess) {
-                    val userItem = response.item.items.firstOrNull()
-                    userItem?.let {
-                        println("User Name: ${it.name}")
-                    }
-                    // Proceed to next activity or logic
-
-                } else {
-                    CustomAlertDialog(requireContext())
-                        .setTitle("Error")
-                        .setDescription(response.message)
-                        .showOkButton(true, "OK") {
-                            println("User acknowledged the error.")
-                        }
-                        .showCancelButton(false)
-                        .show()
-                }
-            },
-            onFailure = { error ->
-                CustomAlertDialog(requireContext())
-                    .setTitle("API Failure")
-                    .setDescription(error)
-                    .showOkButton(true, "Retry") {
-                        println("Retrying API request...")
-                    }
-                    .showCancelButton(false)
-                    .show()
-            }
-        )
+//        ApiHelper.post(
+//            url = "getUserList",
+//            body = farmerRequest,
+//            onSuccess = { response ->
+//                val isSuccess = response["isSuccess"] as? Boolean ?: false
+//                if (isSuccess) {
+//                    val item = response["item"] as? Map<*, *>
+//                    val items = item?.get("items") as? List<Map<String, Any>>
+//                    val userItem = items?.firstOrNull()
+//                    userItem?.let {
+//                        val name = it["name"]?.toString() ?: "No Name"
+//                        println("User Name: $name")
+//                    }
+//                } else {
+//                    val message = response["message"]?.toString() ?: "Unknown error"
+//                    CustomAlertDialog(requireContext())
+//                        .setTitle("Error")
+//                        .setDescription(message)
+//                        .showOkButton(true, "OK") {
+//                            println("User acknowledged the error.")
+//                        }
+//                        .showCancelButton(false)
+//                        .show()
+//                }
+//            },
+//            onError = { error ->
+//                CustomAlertDialog(requireContext())
+//                    .setTitle("API Failure")
+//                    .setDescription(error)
+//                    .showOkButton(true, "Retry") {
+//                        println("Retrying API request...")
+//                    }
+//                    .showCancelButton(false)
+//                    .show()
+//            }
+//        )
     }
 }

@@ -12,6 +12,10 @@
         android:id="@+id/nav_BatchReady"
         android:title="(Load)Batch Ready"
         android:icon="@drawable/batch_ready_side" />
+        <item
+            android:id="@+id/nav_GoingForLoad"
+            android:title="Going For Load"
+            android:icon="@drawable/batch_ready_side" />
     <item
         android:id="@+id/nav_EmployeeList"
         android:title="Employee List"

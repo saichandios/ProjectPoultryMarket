@@ -27,6 +27,7 @@ import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import java.util.Locale
 import android.Manifest
+import android.content.IntentSender
 import android.location.LocationListener
 import android.view.inputmethod.InputMethodManager
 import com.gsggroups.poultrymarket.Common.ApiHelper
@@ -35,17 +36,26 @@ import com.gsggroups.poultrymarket.Model.Property
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.google.common.reflect.TypeToken
 import com.google.firebase.firestore.auth.User
 import com.google.gson.Gson
 import com.gsggroups.poultrymarket.Common.DropDownManager
+import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.Employement.EmployementDashboard
 import com.gsggroups.poultrymarket.Model.ApiResponse
 import com.gsggroups.poultrymarket.Model.PropertyRequest
 import com.gsggroups.poultrymarket.Model.UserItem
 import com.gsggroups.poultrymarket.Model.UserRequest
+import com.gsggroups.poultrymarket.Utils.ApiService
+import com.gsggroups.poultrymarket.base.ApiClient
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.TimeZone
 
 
 class RegisterSingup: AppCompatActivity() {
@@ -63,11 +73,13 @@ class RegisterSingup: AppCompatActivity() {
     private lateinit var registerButton: Button
 
     val loader = LoaderUtils(this)
+    private var isWaitingForGPS = false
 
     private var locationListener: LocationListener? = null
     var farmLat: Double = 0.0
     var farmLong: Double = 0.0
-
+    var userRoleId: Int = 0
+    var userRoleName: String = ""
 
     private var citiesMap = mapOf(
         "District1" to listOf("City1", "City2"),
@@ -87,7 +99,8 @@ class RegisterSingup: AppCompatActivity() {
         toolbar.setNavigationOnClickListener {
             finish() // Close the activity and go back to MainActivity
         }
-        val userRole = SharedPreferencesManager.getUserRole(this)
+        userRoleName = SharedPreferencesManager.getUserRole(this).toString()
+        userRoleId = UserRoles.getRoleIdByName(userRoleName ?: "").toInt()
         val selectedRateCard = SharedPreferencesManager.getRatesCard(this)
 
         setupView()
@@ -102,7 +115,7 @@ class RegisterSingup: AppCompatActivity() {
 
                 registerButton.setOnClickListener{
                     hideKeyboard()
-                    when (userRole) {
+                    when (userRoleName) {
                         "Rates" -> {
                             when (selectedRateCard) {
                                 "chicken_card" -> {
@@ -137,96 +150,55 @@ class RegisterSingup: AppCompatActivity() {
                                 }
                             }
                         }
-                        "ChicksSupplier" -> {
+                        UserRoles.ROLE_CHICKS_SUPPLIER -> {
 
                         }
-                        "Farmer" -> {
+                        UserRoles.ROLE_FARMER -> {
                             val intent = Intent(this, Dashboard::class.java)
-                            if (!validateInputs()) {
-//                                SharedPreferencesManager.saveSignedIn(this, true)
-                                SharedPreferencesManager.saveUserRole(this,"Farmer")
-//                                registerUser(intent)
-                                startActivity(intent)
+                            if (validateInputs()) {
+                                registerUser(intent)
+//                                startActivity(intent)
                             } else {
-                                CustomAlertDialog(this)
-                                    .setTitle("Empty fields!!")
-                                    .setDescription("Fill all the fields")
-                                    .showOkButton(true, "OK") {
-                                        println("Register")
-                                    }
-                                    .showCancelButton(false)
-                                    .show()
+                                showCustomdailogEmptyValues(this)
                             }
                         }
-                        "Trader" -> {
+                        UserRoles.ROLE_TRADER -> {
                             val intent = Intent(this, Dashboard::class.java)
-                            if (!validateInputs()) {
-//                                SharedPreferencesManager.saveSignedIn(this, true)
-                                SharedPreferencesManager.saveUserRole(this,"Trader")
-                                startActivity(intent)
+                            if (validateInputs()) {
+                                registerUser(intent)
                             } else {
-                                CustomAlertDialog(this)
-                                    .setTitle("Empty fields!!")
-                                    .setDescription("Fill all the fields")
-                                    .showOkButton(true, "OK") {
-                                        println("Register")
-                                    }
-                                    .showCancelButton(false)
-                                    .show()
+                                showCustomdailogEmptyValues(this)
                             }
                         }
-                        "Shopkeeper" -> {
+                        UserRoles.ROLE_SHOPKEEPER -> {
                             val intent = Intent(this, Dashboard::class.java)
-                            if (!validateInputs()) {
-//                                SharedPreferencesManager.saveSignedIn(this, true)
-                                SharedPreferencesManager.saveUserRole(this,"Shopkeeper")
-                                startActivity(intent)
+                            if (validateInputs()) {
+                                registerUser(intent)
                             } else {
-                                CustomAlertDialog(this)
-                                    .setTitle("Empty fields!!")
-                                    .setDescription("Fill all the fields")
-                                    .showOkButton(true, "OK") {
-                                        println("Register")
-                                    }
-                                    .showCancelButton(false)
-                                    .show()
+                                showCustomdailogEmptyValues(this)
                             }
                         }
-                        "EmployerOrg" -> {
+                        UserRoles.ROLE_EMPLOYERORG -> {
 
                         }
-                        "Employee" -> {
+                        UserRoles.ROLE_EMPLOYEE -> {
                             val intent = Intent(this, EmployementDashboard::class.java)
-                            if (!validateInputs()) {
+                            if (validateInputs()) {
 //                                SharedPreferencesManager.saveSignedIn(this, true)
-                                SharedPreferencesManager.saveUserRole(context = this, "Employee")
-                                startActivity(intent)
+//                                registerUser(intent)
                             } else {
-                                CustomAlertDialog(this)
-                                    .setTitle("Empty fields!!")
-                                    .setDescription("Fill all the fields")
-                                    .showOkButton(true, "OK") {
-                                        println("Register")
-                                    }
-                                    .showCancelButton(false)
-                                    .show()
+                                showCustomdailogEmptyValues(this)
                             }
                         }
                         else -> {
-                            val intent = Intent(this, Dashboard::class.java)
-                            if (validateInputs()) {
-                                SharedPreferencesManager.saveSignedIn(this, true)
-                                startActivity(intent)
-                            } else {
                                 CustomAlertDialog(this)
-                                    .setTitle("Empty fields!!")
-                                    .setDescription("Fill all the fields")
+                                    .setTitle("Try again after some time")
+                                    .setDescription("Some thing went wrong from our side")
                                     .showOkButton(true, "OK") {
                                         println("Register")
                                     }
                                     .showCancelButton(false)
                                     .show()
-                            }
                         }
                     }
 
@@ -238,12 +210,22 @@ class RegisterSingup: AppCompatActivity() {
             }
     }
 
+    private fun showCustomdailogEmptyValues(registerSingup: RegisterSingup) {
+        CustomAlertDialog(registerSingup).setTitle("Empty fields!!")
+            .setDescription("Fill all the fields").showOkButton(true, "OK") {
+                println("Register")
+                loader.hide()
+            }.showCancelButton(false).show()
+    }
+
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = currentFocus ?: View(this) // Fallback to a new view if no current focus
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
+    var selectedStatePosition = -1
+    var selectedDistrictPosition = -1
     fun setupView() {
         roleSpinner = findViewById<Spinner>(R.id.spinner_role)
         tfName = findViewById<EditText>(R.id.textfield_name)
@@ -265,16 +247,15 @@ class RegisterSingup: AppCompatActivity() {
             roleSpinner.visibility = View.GONE
         }
 
-        val userRole = SharedPreferencesManager.getUserRole(this)
-        when (userRole) {
-            "Employee" -> {
+        when (userRoleName) {
+            UserRoles.ROLE_EMPLOYEE -> {
                 tfAdd2.hint = "Click on GPS button in this box for your current location"
                 tfFarm.visibility = View.GONE
             }
-            "Trader" -> {
+            UserRoles.ROLE_TRADER -> {
                 tfFarm.hint = "Enter Your Shop Name"
             }
-            "Shopkeeper" -> {
+            UserRoles.ROLE_SHOPKEEPER -> {
                 tfFarm.hint = "Enter Your Shop Name"
             }
             "Rates" -> {
@@ -287,65 +268,62 @@ class RegisterSingup: AppCompatActivity() {
             }
         }
 
+        // Get full list once for reuse
+        val states = DropDownManager.getStates()
 
-        // Populate States
+
+// Adapter for states
         val stateAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            DropDownManager.getStates()
+            this, android.R.layout.simple_spinner_item, states
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
         tfState.adapter = stateAdapter
 
-        // Listen for state selection
+
+
         tfState.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
-                val selectedState = parent.getItemAtPosition(position).toString()
+                // Store selected state position
+                selectedStatePosition = position
 
-                // Populate Districts based on selected State
+                // Get the districts for this state
+                val selectedState = states[position]
+                val districts = DropDownManager.getDistrictsForState(selectedState)
+
+                // Set up district adapter
                 val districtAdapter = ArrayAdapter(
-                    this@RegisterSingup,
-                    android.R.layout.simple_spinner_item,
-                    DropDownManager.getDistrictsForState(selectedState)
+                    this@RegisterSingup, android.R.layout.simple_spinner_item, districts
                 ).apply {
                     setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 }
                 tfDistrict.adapter = districtAdapter
+
+                // Reset district position
+                selectedDistrictPosition = -1
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // State adapter setup
-        tfState.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, DropDownManager.getStates())
-        tfState.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedState = DropDownManager.getStates()[position]
-                val districts = DropDownManager.getDistrictsForState(selectedState)
-                tfDistrict.adapter = ArrayAdapter(this@RegisterSingup, android.R.layout.simple_spinner_item, districts)
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        // District adapter setup
+// District selection listener
         tfDistrict.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedDistrict = tfDistrict.selectedItem.toString()
-                val cities = citiesMap[selectedDistrict] ?: emptyList()
-//                tfCity.adapter = ArrayAdapter(this@RegisterSingup, android.R.layout.simple_spinner_item, cities)
+            override fun onItemSelected(
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
+            ) {
+                // Store district position
+                selectedDistrictPosition = position
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 
 
     private fun validateInputs(): Boolean {
+        println("validateInputs called" + tfName.text.toString() + "\n" + tfMobile.text.toString() + "\n" + tfPin.text.toString() + "\n" + tfFarm.text.toString() + "\n" + tfState.selectedItem.toString() + "\n" + tfDistrict.selectedItem.toString() + "\n" + tfAdd1.text.toString() + "\n" + tfAdd2.text.toString())
         if (tfName.text.toString().isEmpty()) {
             tfName.error = "Name is required"
             return false
@@ -398,7 +376,10 @@ class RegisterSingup: AppCompatActivity() {
 
     //GPS check and get physical address
     private fun checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             // Request location permission
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         } else {
@@ -406,27 +387,43 @@ class RegisterSingup: AppCompatActivity() {
         }
     }
 
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        if (isGranted) {
-            checkGPSEnabled()
-        } else {
-            // Permission denied
-             CustomAlertDialog(this)
-                .setTitle("Location permission is required to fetch GPS coordinates.")
-                .setDescription("")
-                .showOkButton(true, "OK") {
-                }
-                .showCancelButton(false)
-                .show()
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                checkGPSEnabled()
+            } else {
+                // Permission denied
+                CustomAlertDialog(this).setTitle("Location permission is required to fetch GPS coordinates.")
+                    .setDescription("").showOkButton(true, "OK") {}.showCancelButton(false).show()
+            }
         }
-    }
 
     private fun checkGPSEnabled() {
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            showGPSDisabledAlert()
-        } else {
+        val locationRequest =
+            LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+            .setAlwaysShow(true) // 👈 this triggers dialog
+
+        val settingsClient = LocationServices.getSettingsClient(this)
+        val task = settingsClient.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            // All good — GPS already enabled
             getLocationAndFillAddress()
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    exception.startResolutionForResult(this, 1001)
+                } catch (e: IntentSender.SendIntentException) {
+                    e.printStackTrace()
+                }
+            } else {
+                loader.hide()
+                Toast.makeText(this, "GPS not available", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -469,20 +466,27 @@ class RegisterSingup: AppCompatActivity() {
 
     private fun getAddressFromLatLong(latitude: Double, longitude: Double) {
         val geocoder = Geocoder(this, Locale.getDefault())
-        val addresses: MutableList<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
 
-        if (addresses != null) {
-            if (addresses.isNotEmpty()) {
-                println(addresses[0].locality)
+        try {
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+
+            if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0].getAddressLine(0)
                 tfAdd2.setText(address)
-                loader.hide()
-                hideKeyboard()
-                // Optionally, you can stop GPS updates here too, in case the address retrieval is not immediate
-                locationListener?.let {
-                    val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                    locationManager.removeUpdates(it)
-                }
+            } else {
+                tfAdd2.setText("Address not found")
+            }
+        } catch (e: IOException) {
+            tfAdd2.setText("Error getting address")
+            e.printStackTrace()
+        } finally {
+            loader.hide()
+            hideKeyboard()
+
+            // Just in case — remove updates again here
+            locationListener?.let {
+                val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                locationManager.removeUpdates(it)
             }
         }
     }
@@ -500,14 +504,14 @@ class RegisterSingup: AppCompatActivity() {
             val address2 = tfAdd2.text.toString()
 
             val propertyDetails = PropertyRequest(
-                address1 = address1,  // Address line 1
-                address2 = address2,  // Address line 2
-                propertyName = farmName,  // Farm name
-                propertyLat = 0.0,  // Latitude (provide the actual value)
-                propertyLong = 0.0,  // Longitude (provide the actual value)
-                createdDateTime = "",  // Sample creation date (adjust as needed)
-                updatedDateTime = "",  // Sample update date (adjust as needed)
-                isDeleted = false  // Set as per your logic
+                address1 = address1,
+                address2 = address2,
+                propertyName = farmName,
+                propertyLat = farmLat,
+                propertyLong = farmLong,
+                createdDateTime = getCurrentDateTime(),
+                updatedDateTime = getCurrentDateTime(),
+                isDeleted = false
             )
 
             val propertyList = listOf(propertyDetails)
@@ -516,67 +520,55 @@ class RegisterSingup: AppCompatActivity() {
                 name = name,
                 mobileNumber = mobile,
                 pin = pin,
-                stateID = state,
-                districtID = district,
-                cityID = "",  // If you want to get the city, use a similar method to map
-                latitude = farmLat,  // Assuming you might get the location using a GPS API
-                longitude = farmLong,  // Same as latitude
-                batchReady = false,  // Set as per your condition
-                needLoad = false,  // Set as per your condition
-                goingForLoad = false,  // Set as per your condition
-                henCount = 0,  // Set as per your logic
-                henWeight = 0.0f,  // Set hen weight if needed
-                deviceToken = "",  // Provide device token if applicable
-                roleID = 0,  // Assigned role ID
-                propertyList = propertyList,  // Adding the property to the property list
-                subscriptionID = 0,  // Subscription ID if applicable
-                isDeleted = false,  // Set according to your logic
-                createdDateTime = "",  // Current timestamp
-                updatedDateTime = "",  // Current timestamp
+                stateID = selectedStatePosition,
+                districtID = selectedDistrictPosition,
+                cityID = 0,
+                latitude = farmLat,
+                longitude = farmLong,
+                batchReady = false,
+                needLoad = false,
+                goingForLoad = false,
+                henCount = 0,
+                henWeight = 0.0f,
+                deviceToken = "",
+                roleID = userRoleId,
+                propertyList = propertyList,
+                subscriptionID = 0,
+                isDeleted = false,
+                createdDateTime = getCurrentDateTime(),
+                updatedDateTime = getCurrentDateTime(),
+                //  static
+                userID = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
             )
 
-            // Call the API
-            ApiHelper.post(
-                url = "registerUser",
-                body = userRequest,
-                responseType = ApiResponse::class.java,
-                onSuccess = { apiResponse ->
-                    if (apiResponse.isSuccess) {
-                        val userItem = apiResponse.item
-                        println("User Name: ${userItem.name}")
-                        // Save user data
-                        SharedPreferencesManager.saveUserData(this, userItem)
-                        val userData = SharedPreferencesManager.getUserData(this)
-                        userData?.let {
-                            println("Retrieved User Data: ${userData.name}")
-                        }
-                        // Navigate or handle further actions
-                        startActivity(intent)
-                    } else {
-                        CustomAlertDialog(this)
-                            .setTitle("Error")
-                            .setDescription(apiResponse.message)
-                            .showOkButton(true, "OK") {
-                                println("User acknowledged the error.")
-                            }
-                            .showCancelButton(false)
-                            .show()
-                    }
-                },
-                onFailure = { error ->
-                    CustomAlertDialog(this)
-                        .setTitle("Registration Failed")
-                        .setDescription(error)
-                        .showOkButton(true, "Retry") {
-                            println("Retrying registration...")
-                        }
-                        .showCancelButton(false)
-                        .show()
+            val call = ApiClient.retrofit.create(ApiService::class.java).registerUser(userRequest)
+
+            ApiHelper.post(endpointCall = call, onSuccess = { response ->
+                if (response.isSuccess) {
+                    val user = response.item
+                    println("User Registered: ${user}")
+                    startActivity(intent)
+                    loader.hide()
+                    SharedPreferencesManager.saveSignedIn(this, true)
+
+                } else {
+                    showCustomdailogResponseValues(this, response.message)
+                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
                 }
-            )
+            }, onFailure = { error ->
+                showCustomdailogResponseValues(this, error.toString())
+                Toast.makeText(this, "Error: $error", Toast.LENGTH_SHORT).show()
+            })
         }
     }
 
+    private fun showCustomdailogResponseValues(registerSingup: RegisterSingup, error: String) {
+        CustomAlertDialog(registerSingup).setTitle("Request Error").setDescription(error)
+            .showOkButton(true, "OK") {
+                println("Register")
+                loader.hide()
+            }.showCancelButton(false).show()
+    }
 
     // Handle the back button press in the action bar
     override fun onSupportNavigateUp(): Boolean {
@@ -605,5 +597,17 @@ class RegisterSingup: AppCompatActivity() {
     fun getCurrentDateTime(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
         return sdf.format(Date())
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1001) {
+            if (resultCode == RESULT_OK) {
+                getLocationAndFillAddress()
+            } else {
+                loader.hide()
+                Toast.makeText(this, "GPS not enabled", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

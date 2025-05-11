@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.common.reflect.TypeToken
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
+import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.DBManager.State
 import com.gsggroups.poultrymarket.Model.UserItem
 import java.io.InputStreamReader
@@ -38,7 +39,7 @@ class SplashActivity : AppCompatActivity() {
         firestore.collection("teststate").document("teststateD")
             .collection("testdist").document("testdist")
             .collection("testcity").document("testcity")
-            .collection("farmer")
+            .collection(UserRoles.ROLE_FARMER)
             .get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty()) {

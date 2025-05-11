@@ -12,11 +12,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.CustomAlertDialog
+import com.gsggroups.poultrymarket.Common.RetrofitClient
+import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.DashboardView.RecyclerAdapter
 import com.gsggroups.poultrymarket.Employement.EmployeDetails
+import com.gsggroups.poultrymarket.Model.GetUserList
 import com.gsggroups.poultrymarket.Model.ListResponseModel
 import com.gsggroups.poultrymarket.Model.ListRoleRequest
 import com.gsggroups.poultrymarket.Model.UserModel
+import com.gsggroups.poultrymarket.Utils.ApiService
+import com.gsggroups.poultrymarket.base.ApiClient
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -53,7 +59,9 @@ class CutterListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        getCutterList()
+        val userId = SharedPreferencesManager.getUserId(requireContext())
+
+        getUserList(userId)
         return inflater.inflate(R.layout.fragment_cutter_list, container, false)
     }
 
@@ -136,37 +144,41 @@ class CutterListFragment : Fragment() {
             }
     }
 
-    private fun getCutterList() {
-        val farmerRequest = ListRoleRequest(
+    private fun getUserList( userId: String?) {
+        val farmerRequest = GetUserList(
+            userId = userId ?: "",
             roleId = 0,
-            pageNumber = 0,
-            pageSize = 0,
-            search = "string",
-            sortColumn = "string",
-            sortDirection = "string",
+            pageNumber = 1,
+            pageSize = 10,
+            search = "",
+            sortColumn = "",
+            sortDirection = "",
             stateId = 0,
             districtId = 0,
-            batchReady = true,
-            needLoad = true,
-            goingForLoad = true
+            batchReady = false,
+            needLoad = false,
+            goingForLoad = false
         )
 
-        ApiHelper.post(
-            url = "getUserList",
-            body = farmerRequest,
-            responseType = ListResponseModel::class.java,
-            onSuccess = { response ->
-                if (response.isSuccess) {
-                    val userItem = response.item.items.firstOrNull()
-                    userItem?.let {
-                        println("User Name: ${it.name}")
-                    }
-                    // Proceed to next activity or logic
+        val call = RetrofitClient.retrofit.create(ApiService::class.java).getUserList(farmerRequest)
 
+        ApiHelper.post(
+            endpointCall = call,
+            onSuccess = { response ->
+                val isSuccess = response.isSuccess
+                if (isSuccess) {
+                    val item = response.item as? Map<*, *>
+                    val items = item?.get("items") as? List<Map<String, Any>>
+                    val userItem = items?.firstOrNull()
+                    userItem?.let {
+                        val name = it["name"]?.toString() ?: "No Name"
+                        println("User Name: $name")
+                    }
                 } else {
+                    val message = response.message ?: "Unknown error"
                     CustomAlertDialog(requireContext())
                         .setTitle("Error")
-                        .setDescription(response.message)
+                        .setDescription(message)
                         .showOkButton(true, "OK") {
                             println("User acknowledged the error.")
                         }

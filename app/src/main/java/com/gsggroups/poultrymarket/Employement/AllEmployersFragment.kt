@@ -17,6 +17,7 @@ import com.gsggroups.poultrymarket.Model.ListResponseModel
 import com.gsggroups.poultrymarket.Model.ListRoleRequest
 import com.gsggroups.poultrymarket.Model.UserModel
 import com.gsggroups.poultrymarket.R
+import com.google.gson.Gson
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -148,39 +149,7 @@ class AllEmployersFragment : Fragment() {
             goingForLoad = true
         )
 
-        ApiHelper.post(
-            url = "getUserList",
-            body = farmerRequest,
-            responseType = ListResponseModel::class.java,
-            onSuccess = { response ->
-                if (response.isSuccess) {
-                    val userItem = response.item.items.firstOrNull()
-                    userItem?.let {
-                        println("User Name: ${it.name}")
-                    }
-                    // Proceed to next activity or logic
 
-                } else {
-                    CustomAlertDialog(requireContext())
-                        .setTitle("Error")
-                        .setDescription(response.message)
-                        .showOkButton(true, "OK") {
-                            println("User acknowledged the error.")
-                        }
-                        .showCancelButton(false)
-                        .show()
-                }
-            },
-            onFailure = { error ->
-                CustomAlertDialog(requireContext())
-                    .setTitle("API Failure")
-                    .setDescription(error)
-                    .showOkButton(true, "Retry") {
-                        println("Retrying API request...")
-                    }
-                    .showCancelButton(false)
-                    .show()
-            }
-        )
     }
+
 }

@@ -28,6 +28,7 @@ import com.gsggroups.poultrymarket.AdminAppScreens.AdminAppDashBoard
 import com.gsggroups.poultrymarket.Common.NetworkManager
 import com.gsggroups.poultrymarket.Common.NotificationUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
+import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Employement.EmployementDashboard
 import com.phonepe.intent.sdk.api.B2BPGRequestBuilder
@@ -86,8 +87,9 @@ class WelcomeActivity : AppCompatActivity() {
         // Set click listeners for each card
         cardFarmer.setOnClickListener {
             val intent = Intent(this, RegisterSingup::class.java)
-            val userRole = "Farmer" // This value would be determined dynamically
+            val userRole = UserRoles.ROLE_FARMER
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
+            SharedPreferencesManager.saveRoleID(context = this, UserRoles.ID_FARMER)
 //            districtsFinder()
             startActivity(intent)
 //            finish() // Close Welcome page
@@ -100,31 +102,34 @@ class WelcomeActivity : AppCompatActivity() {
         cardTrader.setOnClickListener {
 //            Toast.makeText(this, "Trader Card Clicked", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, RegisterSingup::class.java)
-            val userRole = "Trader" // This value would be determined dynamically
+            val userRole = UserRoles.ROLE_TRADER
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
+            SharedPreferencesManager.saveRoleID(context = this, UserRoles.ID_TRADER)
             startActivity(intent)
         }
 
         cardShopkeeper.setOnClickListener {
 //            Toast.makeText(this, "Shopkeeper Card Clicked", Toast.LENGTH_LONG).show()
             val intent = Intent(this, RegisterSingup::class.java)
-            val userRole = "Shopkeeper" // This value would be determined dynamically
+            val userRole = UserRoles.ROLE_SHOPKEEPER
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
+            SharedPreferencesManager.saveRoleID(context = this, UserRoles.ID_SHOPKEEPER)
             startActivity(intent)
         }
 
         cardEmployement.setOnClickListener {
             Toast.makeText(this, "Comming Soon", Toast.LENGTH_LONG).show()
-//            val intent = Intent(this, RegisterSingup::class.java)
-//            val userRole = "Employee" // Employment = Employee
-//            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
-//            startActivity(intent)
+            val intent = Intent(this, RegisterSingup::class.java)
+            val userRole = UserRoles.ROLE_EMPLOYEE // Employment = Employee
+            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
+            SharedPreferencesManager.saveRoleID(context = this, UserRoles.ID_EMPLOYEE)
+            startActivity(intent)
         }
 
         ratesCapsule.setOnClickListener {
             Toast.makeText(this, "Comming Soon", Toast.LENGTH_LONG).show()
 //            val intent = Intent(this, WelcomeRates:: class.java)
-//            val userRole = "Rates" // Employment = Employee
+//            val userRole = "Rates"
 //            SharedPreferencesManager.saveUserRole(context = this, role = userRole)
 //            startActivity(intent)
         }

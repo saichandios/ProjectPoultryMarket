@@ -202,35 +202,9 @@ class ChickenRatesFragment : Fragment() {
 
     fun fetchDistrictRates() {
         loader.show()
-        ApiHelper.get(
-            url = "https://api.yourserver.com/Rates",
-            responseType = RatesResponse::class.java,
-            onSuccess = { response ->
-                // Response successfully parsed into RatesResponse
-                allDistrictRates.clear()
-                allDistrictRates.addAll(response.districtRates)
-
-                allStates.clear()
-                allStates.addAll(response.states)
-
-                loader.hide()
-                println("DistrictRates: Rates fetched and stored successfully.")
-            },
-            onFailure = { error ->
-                loader.hide()
-                CustomAlertDialog(requireContext())
-                    .setTitle("Failed to load Data")
-                    .setDescription("Go back and come to rates")
-                    .showOkButton(true, "OK") {
-                        println("Retrying rates fetch.")
-                    }
-                    .showCancelButton(false)
-                    .show()
-                println("API Error: Failed to retrieve rates: $error")
-            }
-        )
 
     }
+
 
 
     // Extension function to convert dp to pixels

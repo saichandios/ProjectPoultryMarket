@@ -9,8 +9,13 @@ object SharedPreferencesManager {
 
     private const val PREFS_NAME = "UserPreferences"
     private const val KEY_USER_ROLE = "user_role"
+    private const val KEY_USER_ID = "user_id"
+    private const val KEY_ROLE_ID = "role_id"
+    private const val KEY_PROPERTY_ID = "property_id"
     private const val KEY_SIGN_IN = "KEY_SIGN_IN"
     private const val KEY_RATES = "KEY_RATES"
+    private const val KEY_TIME = "KEY_TIME"
+
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -41,6 +46,42 @@ object SharedPreferencesManager {
         return getPreferences(context).getString(KEY_USER_ROLE, null)
     }
 
+    // Save user_id in SharedPreferences
+    fun saveUserID(context: Context, role: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_USER_ID, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getUserId(context: Context): String? {
+        return getPreferences(context).getString(KEY_USER_ID, null)
+    }
+
+    // Save roll_id in SharedPreferences
+    fun saveRoleID(context: Context, role: Int) {
+        val editor = getPreferences(context).edit()
+        editor.putInt(KEY_ROLE_ID, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getRoleId(context: Context): Int? {
+        return getPreferences(context).getInt(KEY_ROLE_ID, 0)
+    }
+
+    // Save roll_id in SharedPreferences
+    fun savePropertyID(context: Context, role: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_PROPERTY_ID, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getPropertyId(context: Context): String? {
+        return getPreferences(context).getString(KEY_PROPERTY_ID, "")
+    }
+
     // Save user role in SharedPreferences
     fun saveRatesCard(context: Context, role: String) {
         val editor = getPreferences(context).edit()
@@ -68,6 +109,13 @@ object SharedPreferencesManager {
     }
 
     // Clear user role (useful for logout or role change)
+    fun clearRoleId(context: Context) {
+        val editor = getPreferences(context).edit()
+        editor.remove(KEY_ROLE_ID)
+        editor.apply()
+    }
+
+    // Clear user role (useful for logout or role change)
     fun clearRates(context: Context) {
         val editor = getPreferences(context).edit()
         editor.remove(KEY_RATES)
@@ -90,5 +138,14 @@ object SharedPreferencesManager {
         } else {
             null
         }
+    }
+
+    fun saveLastSubmissionTime(context: Context, batchReadyUpdatedDateTime: String?) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_TIME, batchReadyUpdatedDateTime).apply()
+    }
+    fun getLastSubmissionTime(context: Context): String ?{
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString(KEY_TIME, null)
     }
 }

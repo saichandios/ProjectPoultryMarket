@@ -62,12 +62,18 @@ class SupervisorListFragment : Fragment() {
 
         // Sample data for demonstration
         userList = arrayListOf(
-            UserModel(role = "Driver", name = "Cutter 123", detail = "State: Andhra Pradesh",
-                detail2 = "District: Guntur", status = ""),
-            UserModel(role = "Driver", name = "SS1232", detail = "State: Telangana",
-                detail2 = "District: RangaReddy", status = ""),
-            UserModel(role = "Driver", name = "new Cutter", detail = "State: Telangana",
-                detail2 = "District: RangaReddy", status = "Need Job")
+            UserModel(
+                role = "Driver", name = "Cutter 123", detail = "State: Andhra Pradesh",
+                detail2 = "District: Guntur", status = ""
+            ),
+            UserModel(
+                role = "Driver", name = "SS1232", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = ""
+            ),
+            UserModel(
+                role = "Driver", name = "new Cutter", detail = "State: Telangana",
+                detail2 = "District: RangaReddy", status = "Need Job"
+            )
         )
 
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -137,53 +143,19 @@ class SupervisorListFragment : Fragment() {
 
     private fun getSupervisorList() {
         val farmerRequest = ListRoleRequest(
-            roleId = 0,
-            pageNumber = 0,
-            pageSize = 0,
-            search = "string",
-            sortColumn = "string",
-            sortDirection = "string",
-            stateId = 0,
-            districtId = 0,
-            batchReady = true,
-            needLoad = true,
-            goingForLoad = true
+            roleId = 1,
+            pageNumber = 1,
+            pageSize = 10,
+            search = "",
+            sortColumn = "",
+            sortDirection = "",
+            stateId = 1,
+            districtId = 1,
+            batchReady = false,
+            needLoad = false,
+            goingForLoad = false
         )
 
-        ApiHelper.post(
-            url = "getUserList",
-            body = farmerRequest,
-            responseType = ListResponseModel::class.java,
-            onSuccess = { response ->
-                if (response.isSuccess) {
-                    val userItem = response.item.items.firstOrNull()
-                    userItem?.let {
-                        println("User Name: ${it.name}")
-                    }
-                    // Proceed to next activity or logic
 
-                } else {
-                    CustomAlertDialog(requireContext())
-                        .setTitle("Error")
-                        .setDescription(response.message)
-                        .showOkButton(true, "OK") {
-                            println("User acknowledged the error.")
-                        }
-                        .showCancelButton(false)
-                        .show()
-                }
-            },
-            onFailure = { error ->
-                CustomAlertDialog(requireContext())
-                    .setTitle("API Failure")
-                    .setDescription(error)
-                    .showOkButton(true, "Retry") {
-                        println("Retrying API request...")
-                    }
-                    .showCancelButton(false)
-                    .show()
-            }
-        )
     }
-
 }

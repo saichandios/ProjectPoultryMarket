@@ -20,6 +20,7 @@ import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Model.DistrictRates
 import com.gsggroups.poultrymarket.Model.RatesResponse
 import com.gsggroups.poultrymarket.Model.State
+import com.google.gson.Gson
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -245,34 +246,11 @@ class EggRatesFragment : Fragment() {
 
     fun fetchDistrictRates() {
         loader.show()
-        ApiHelper.get(
-            url = "https://api.yourserver.com/Rates",
-            responseType = RatesResponse::class.java,
-            onSuccess = { response ->
-                // Response successfully parsed into RatesResponse
-                allDistrictRates.clear()
-                allDistrictRates.addAll(response.districtRates)
 
-                allStates.clear()
-                allStates.addAll(response.states)
 
-                loader.hide()
-                println("DistrictRates: Rates fetched and stored successfully.")
-            },
-            onFailure = { error ->
-                loader.hide()
-                CustomAlertDialog(requireContext())
-                    .setTitle("Failed to load Data")
-                    .setDescription("Go back and come to rates")
-                    .showOkButton(true, "OK") {
-                        println("Retrying rates fetch.")
-                    }
-                    .showCancelButton(false)
-                    .show()
-                println("API Error: Failed to retrieve rates: $error")
-            }
-        )
     }
+
+
 
     // Extension function to convert dp to pixels
     private fun Int.dpToPx(): Int {

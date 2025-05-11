@@ -32,9 +32,11 @@ import com.gsggroups.poultrymarket.BatchReadyFragment
 import com.gsggroups.poultrymarket.ChickenRatesFragment
 import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
+import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.EditProfile
 import com.gsggroups.poultrymarket.EggRatesFragment
 import com.gsggroups.poultrymarket.EmployeeTabLayout
+import com.gsggroups.poultrymarket.GoingForLoadFragment
 import com.gsggroups.poultrymarket.Login
 import com.gsggroups.poultrymarket.NeedEmployee
 import com.gsggroups.poultrymarket.NotificationTabLayoutFragment
@@ -57,6 +59,8 @@ class Dashboard : AppCompatActivity() {
     private var currentFragment: Fragment? = null
 
     private lateinit var loader: LoaderUtils
+    var userRoleId: Int = 0
+    var userRoleName: String = ""
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +71,9 @@ class Dashboard : AppCompatActivity() {
         // Initialize DrawerLayout and NavigationView
         drawerLayout = binding.drawerLayout
         navView = binding.navigationView
+
+        userRoleId = SharedPreferencesManager.getRoleId(this)?.toInt() ?: 0
+        userRoleName = UserRoles.getRoleNameById(userRoleId).toString()
 
         loader = LoaderUtils(this)
         loader.show()
@@ -91,12 +98,12 @@ class Dashboard : AppCompatActivity() {
             handleNavigationItemSelected(menuItem)
             true
         }
-        val userRole = SharedPreferencesManager.getUserRole(this)
+
         val menu = navView.menu
         val navBatchReadyItem: MenuItem = menu.findItem(R.id.nav_BatchReady)
-            if (userRole == "Farmer") {
+            if (userRoleName == UserRoles.ROLE_FARMER) {
                 navBatchReadyItem.title = "Batch Ready"
-            } else if (userRole == "Trader") {
+            } else if (userRoleName == UserRoles.ROLE_TRADER) {
                 navBatchReadyItem.title = "Need Load"
             } else {
                 navBatchReadyItem.title = "Need Load"
@@ -110,8 +117,8 @@ class Dashboard : AppCompatActivity() {
         }
 
 
-        if (userRole != null) {
-            val tabs = getTabsBasedOnUserRole(userRole)
+        if (userRoleName != null || userRoleName != "null") {
+            val tabs = getTabsBasedOnUserRole(userRoleName)
             navigateToTablayoutFragment(tabs.first, tabs.second)
         }
 
@@ -176,8 +183,8 @@ class Dashboard : AppCompatActivity() {
             }
         }
 
-        if (userRole != null) {
-            setTextViewBasedOnRole(userRole, load_textView, going_textView, load_switch, going_switch)
+        if (userRoleName != null || userRoleName != "null") {
+            setTextViewBasedOnRole(userRoleName, load_textView, going_textView, load_switch, going_switch)
         }
     }
 
@@ -189,7 +196,7 @@ class Dashboard : AppCompatActivity() {
         goingSwitch: Switch
     ) {
         when (role) {
-            "Farmer" -> {
+            UserRoles.ROLE_FARMER -> {
                     // For Farmer: If status is Batch Ready
                     loadTextView.text = "Batch Ready"
                     loadTextView.visibility = View.VISIBLE
@@ -197,7 +204,7 @@ class Dashboard : AppCompatActivity() {
                     goingTextView.visibility = View.GONE
                     goingSwitch.visibility = View.GONE
             }
-            "Trader" -> {
+            UserRoles.ROLE_TRADER -> {
                     // For Trader: If status is Need Load
                     loadTextView.text = "Need Load"
                     loadTextView.visibility = View.VISIBLE
@@ -206,7 +213,7 @@ class Dashboard : AppCompatActivity() {
                     goingSwitch.visibility = View.VISIBLE
 
             }
-            "Shopkeeper" -> {
+            UserRoles.ROLE_SHOPKEEPER -> {
                     // For Shopkeeper: If status is Need Load
                     loadTextView.text = "Need Load"
                     loadTextView.visibility = View.VISIBLE
@@ -251,10 +258,10 @@ class Dashboard : AppCompatActivity() {
 
         // Filter tabs based on user role
         val filteredTabs = when (userRole) {
-            "Farmer" -> availableTabs.filter { it.first == "Trader" }
-            "Trader" -> availableTabs.filter { it.first in listOf("Farmer", "Shopkeeper") }
-            "Shopkeeper" -> availableTabs.filter { it.first == "Trader" }
-            "Admin" -> availableTabs // Admin sees all tabs
+            UserRoles.ROLE_FARMER -> availableTabs.filter { it.first == "Trader" }
+            UserRoles.ROLE_TRADER -> availableTabs.filter { it.first in listOf("Farmer", "Shopkeeper") }
+            UserRoles.ROLE_SHOPKEEPER -> availableTabs.filter { it.first == "Trader" }
+            UserRoles.ROLE_ADMIN -> availableTabs // Admin sees all tabs
             else -> listOf() // Default case, no tabs
         }
         // Extract titles and fragment identifiers into separate lists
@@ -276,10 +283,9 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun handleNavigationItemSelected(menuItem: MenuItem) {
-        val userRole = SharedPreferencesManager.getUserRole(this)
         val selectedFragment: Fragment = when (menuItem.itemId) {
             R.id.nav_List -> {
-                val tabs = userRole?.let { getTabsBasedOnUserRole(it) }
+                val tabs = userRoleName?.let { getTabsBasedOnUserRole(it) }
                 if (tabs != null) {
                     navigateToTablayoutFragment(tabs.first, tabs.second)
                 }
@@ -287,6 +293,7 @@ class Dashboard : AppCompatActivity() {
                 return
             }
             R.id.nav_BatchReady -> BatchReadyFragment()
+            R.id.nav_GoingForLoad -> GoingForLoadFragment()
             R.id.nav_NeedEmployee -> NeedEmployee()
             R.id.nav_Profile -> EditProfile()
             R.id.nav_EmployeeList -> EmployeeTabLayout()
@@ -298,6 +305,7 @@ class Dashboard : AppCompatActivity() {
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the back stack
                 SharedPreferencesManager.clearSignedIn(this)
                 SharedPreferencesManager.clearUserRole(this)
+                SharedPreferencesManager.clearRoleId(this)
                 startActivity(intent)
                 return
             }
