@@ -15,7 +15,48 @@ object SharedPreferencesManager {
     private const val KEY_SIGN_IN = "KEY_SIGN_IN"
     private const val KEY_RATES = "KEY_RATES"
     private const val KEY_TIME = "KEY_TIME"
+    private const val LAST_SUBMIT_TIMESTAMP_BATCH = "last_submit_timestamp_BatchReady"
+    private const val LAST_SUBMIT_TIMESTAMP_NEEDLOAD = "last_submit_timestamp_NeedLoad"
+    private const val LAST_SUBMIT_TIMESTAMP_GOINGLOAD = "last_submit_timestamp_GoingForLoad"
 
+    fun saveLastSubmitTimeBatch(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(LAST_SUBMIT_TIMESTAMP_BATCH, timestamp).apply()
+    }
+
+    fun getLastSubmitTimeBatch(context: Context): String? {
+        return getPreferences(context).getString(LAST_SUBMIT_TIMESTAMP_BATCH, null)
+    }
+
+    fun clearLastSubmitTimeBatch(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
+
+    fun saveLastSubmitTimeNeed(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(LAST_SUBMIT_TIMESTAMP_NEEDLOAD, timestamp).apply()
+    }
+
+    fun getLastSubmitTimeNeed(context: Context): String? {
+        return getPreferences(context).getString(LAST_SUBMIT_TIMESTAMP_NEEDLOAD, null)
+    }
+
+    fun clearLastSubmitTimeNeed(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
+
+    fun saveLastSubmitTimeGoing(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(LAST_SUBMIT_TIMESTAMP_GOINGLOAD, timestamp).apply()
+    }
+
+    fun getLastSubmitTimeGoing(context: Context): String? {
+        return getPreferences(context).getString(LAST_SUBMIT_TIMESTAMP_GOINGLOAD, null)
+    }
+
+    fun clearLastSubmitTimeGoing(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
 
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

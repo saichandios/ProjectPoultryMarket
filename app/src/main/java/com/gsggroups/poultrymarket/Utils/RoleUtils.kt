@@ -2,10 +2,10 @@ package com.gsggroups.poultrymarket.Utils
 
 fun getRoleName(roleId: Int): String {
     return when (roleId) {
-        0 -> "Admin"
-        1 -> "Farmer"
-        2 -> "Shopkeeper"
-        3 -> "Trader"
+        333 -> "Admin"
+        336194569 -> "Farmer"
+        963186725 -> "Shopkeeper"
+        632914599 -> "Trader"
         else -> "Unknown"
     }
 }

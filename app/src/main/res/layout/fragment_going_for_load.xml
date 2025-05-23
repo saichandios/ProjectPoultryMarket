@@ -90,6 +90,7 @@
             android:layout_marginBottom="8dp"/>
 
         <Spinner
+            android:id="@+id/hen_size_spinner"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:entries="@array/hen_size_values"
@@ -104,6 +105,7 @@
         android:orientation="vertical"
         android:padding="10dp"
         android:background="@drawable/border_frame"
+        android:visibility="gone"
         android:layout_marginBottom="10dp">
 
         <TextView
@@ -115,6 +117,7 @@
             android:layout_marginBottom="8dp"/>
 
         <Spinner
+            android:id="@+id/farm_spinner"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:entries="@array/farm_values"
@@ -125,6 +128,7 @@
 
     <!-- Submit Button -->
     <Button
+        android:id="@+id/submit_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Submit"

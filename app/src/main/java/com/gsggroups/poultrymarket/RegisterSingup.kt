@@ -193,7 +193,7 @@ class RegisterSingup: AppCompatActivity() {
                         else -> {
                                 CustomAlertDialog(this)
                                     .setTitle("Try again after some time")
-                                    .setDescription("Some thing went wrong from our side")
+                                    .setDescription("Something went wrong from App")
                                     .showOkButton(true, "OK") {
                                         println("Register")
                                     }
@@ -520,8 +520,8 @@ class RegisterSingup: AppCompatActivity() {
                 name = name,
                 mobileNumber = mobile,
                 pin = pin,
-                stateID = selectedStatePosition,
-                districtID = selectedDistrictPosition,
+                stateID = selectedStatePosition + 1,
+                districtID = selectedDistrictPosition + 1,
                 cityID = 0,
                 latitude = farmLat,
                 longitude = farmLong,
@@ -550,6 +550,28 @@ class RegisterSingup: AppCompatActivity() {
                     startActivity(intent)
                     loader.hide()
                     SharedPreferencesManager.saveSignedIn(this, true)
+
+                    val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime
+                    val needLoadUpdatedDateTime = response.item.needLoadUpdatedDateTime
+                    val goingForLoadUpdatedTime = response.item.goingForLoadUpdatedDateTime
+                    val batchReadyBool = response.item.batchReady
+                    val needLoadBool = response.item.needLoad
+                    val goingForLoad = response.item.goingForLoad
+
+                    SharedPreferencesManager.saveUserID(this, user.userID)
+                    SharedPreferencesManager.saveRoleID(this, user.roleID)
+                    SharedPreferencesManager.savePropertyID(this, user.properties[0].propertyID)
+                    if (batchReadyUpdatedDateTime != null && batchReadyBool) {
+                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, "0")
+                    }
+
+                    if (needLoadUpdatedDateTime != null && needLoadBool) {
+                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, "0")
+                    }
 
                 } else {
                     showCustomdailogResponseValues(this, response.message)

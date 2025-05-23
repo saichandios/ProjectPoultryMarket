@@ -9,6 +9,7 @@ import Person
 import android.annotation.SuppressLint
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import com.gsggroups.poultrymarket.Common.DropDownManager
 import com.gsggroups.poultrymarket.Model.UserModel
 import com.gsggroups.poultrymarket.R
 
@@ -34,17 +35,57 @@ class RecyclerAdapter(private var userList: ArrayList<UserModel>,
         holder.bind(user, itemClickListener)
     }
 
+//    @SuppressLint("NotifyDataSetChanged")
+//    fun filter(query: String) {
+//        filteredList.clear()
+//        if (query.isEmpty()) {
+//            filteredList.addAll(userList)
+//        } else {
+//            val filtered = userList.filter {
+//                it.name.contains(query, ignoreCase = true) ||
+//                        it.detail.contains(query, ignoreCase = true)
+//            }
+//            filteredList.addAll(filtered)
+//        }
+//        notifyDataSetChanged()
+//    }
+
     @SuppressLint("NotifyDataSetChanged")
     fun filter(query: String) {
+        val lowerQuery = query.lowercase().trim()
         filteredList.clear()
-        if (query.isEmpty()) {
+
+        if (lowerQuery.isEmpty()) {
             filteredList.addAll(userList)
         } else {
-            val filtered = userList.filter {
-                it.name.contains(query, ignoreCase = true) || it.mobileNumber.contains(query, ignoreCase = true)
+            val filtered = when (lowerQuery) {
+                "batch" -> userList.filter { it.batchReady }
+                "need" -> userList.filter { it.needLoad }
+                "going" -> userList.filter { it.goingForLoad }
+                else -> userList.filter {
+                    val stateName = DropDownManager.getStateNameById(it.stateID)?.lowercase()
+                    val districtName =
+                        DropDownManager.getDistrictNameByIds(it.stateID, it.districtID)?.lowercase()
+
+                    it.name.contains(lowerQuery, ignoreCase = true) ||
+                            it.detail.contains(lowerQuery, ignoreCase = true) ||
+                            stateName?.contains(lowerQuery) ?: false ||
+                            districtName?.contains(lowerQuery) ?: false
+                }
             }
             filteredList.addAll(filtered)
         }
+        notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateList(newList: List<UserModel>) {
+        userList.clear()
+        userList.addAll(newList)
+
+        filteredList.clear()
+        filteredList.addAll(newList)
+
         notifyDataSetChanged()
     }
 
@@ -71,12 +112,15 @@ class RecyclerAdapter(private var userList: ArrayList<UserModel>,
             nameText.text = user.name
 
             val farmText = itemView.findViewById<TextView>(R.id.tvProperty)
-
+            farmText.text = user.detail2 // farm name
             val detailText = itemView.findViewById<TextView>(R.id.tvState)
-            detailText.text = user.detail
+            detailText.text = user.detail // mobile
 
             val detail2Text = itemView.findViewById<TextView>(R.id.tvDistrict)
-            detail2Text.text = user.detail2
+            val stateName = DropDownManager.getStateNameById(user.stateID)
+            val districtName = DropDownManager.getDistrictNameByIds(user.stateID, user.districtID)
+            detail2Text.text = "Location: ${districtName}, ${stateName}"
+            
             val statusText = itemView.findViewById<TextView>(R.id.tvStatus)
             statusText.text = user.status
             statusText.setTextColor(color)

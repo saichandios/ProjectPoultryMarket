@@ -61,6 +61,12 @@ class FarmerFragment : Fragment() {
     var selectedDistrictPosition = 0
     private lateinit var loader: LoaderUtils
 
+    private var currentPage = 1
+    private var isLoading = false
+    private var isLastPage = false
+    private val pageSizeInitial = 20
+    private val pageSizeLoadMore = 10
+
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -137,14 +143,6 @@ class FarmerFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FarmerFragment.
-         */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
@@ -158,7 +156,7 @@ class FarmerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        searchView = view.findViewById(R.id.searchView)
         stateSpinner = view.findViewById(R.id.farmer_state_dropdown)
         districtSpinner = view.findViewById(R.id.farmer_district_dropdown)
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -187,23 +185,35 @@ class FarmerFragment : Fragment() {
 
 //        recyclerView.adapter = personAdapter
 
-        searchView = view.findViewById(R.id.searchView)
         setupSearchView()
 
 
 
         filterButton.setOnClickListener {
-            //Api call
-            val selectedState = stateSpinner.selectedItem.toString()
-            val selectedDistrict = districtSpinner.selectedItem.toString()
-
-            // Perform action with the selected values
-            Toast.makeText(
-                requireContext(),
-                "Selected State: $selectedState, District: $selectedDistrict",
-                Toast.LENGTH_LONG
-            ).show()
+            val userId = SharedPreferencesManager.getUserId(requireContext())
+            getUserList(userId)
         }
+
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                if (!isLoading && !isLastPage) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                        && firstVisibleItemPosition >= 0
+                        && totalItemCount >= pageSizeLoadMore
+                    ) {
+                        loadMoreItems()
+                    }
+                }
+            }
+        })
     }
 
     private fun getUserList( userId: String?) {
@@ -214,12 +224,12 @@ class FarmerFragment : Fragment() {
             userId = userId ?: "",
             roleId = UserRoles.ID_FARMER,
             pageNumber = 1,
-            pageSize = 10,
-            search = "",
+            pageSize = 20,
+            search = searchView.query.toString(),
             sortColumn = "",
             sortDirection = "",
-            stateId = selectedStatePosition,
-            districtId = selectedDistrictPosition,
+            stateId = selectedStatePosition + 1,
+            districtId = selectedDistrictPosition + 1,
             batchReady = false,
             needLoad = false,
             goingForLoad = false
@@ -231,7 +241,18 @@ class FarmerFragment : Fragment() {
             endpointCall = call,
             onSuccess = { response ->
                 if (response.isSuccess) {
+                    userList_1.clear()
+
                     val fetchedUsers = response.item.items
+                    if (fetchedUsers.isEmpty()) {
+                        loader.hide()
+                        personAdapter = RecyclerAdapter(userList_1) {
+
+                        }
+                        recyclerView.adapter = personAdapter
+                        return@post
+                    }
+
                     for (user in fetchedUsers) {
                         val status = when {
                             user.batchReady -> "Status: Batch Ready"
@@ -244,9 +265,17 @@ class FarmerFragment : Fragment() {
                             role = getRoleName(user.roleID) ?: "Unknown",
                             name = user.name ?: "No Name",
                             detail = "Mobile: ${user.mobileNumber}",
-                            detail2 = "Property: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
+                            detail2 = "Farm Name: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
                             status = status,
-                            colorTemp = color
+                            colorTemp = color,
+                            batchReady = user.batchReady,
+                            needLoad = user.needLoad,
+                            goingForLoad = user.goingForLoad,
+                            batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
+                            needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
+                            goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime,
+                            stateID = user.stateID,
+                            districtID = user.districtID
                         )
                         userList_1.add(userModel)
                     }
@@ -273,11 +302,10 @@ class FarmerFragment : Fragment() {
 
     }
         private fun setupSearchView() {
-        // Ensure the SearchView is expanded by default and shows typing interface
         searchView.setIconifiedByDefault(false)
 
-        // Set up listener for text changes in SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            // Set up listener for text changes in SearchView
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -286,6 +314,67 @@ class FarmerFragment : Fragment() {
                 personAdapter.filter(newText ?: "")
                 return true
             }
-        })
+             })
+        }
+
+
+
+    private fun loadMoreItems() {
+        isLoading = true
+        currentPage++
+
+        val userId = SharedPreferencesManager.getUserId(requireContext())
+        val request = GetUserList(
+            userId = userId ?: "",
+            roleId = UserRoles.ID_SHOPKEEPER,
+            pageNumber = currentPage,
+            pageSize = pageSizeLoadMore,
+            search = "",
+            sortColumn = "",
+            sortDirection = "",
+            stateId = selectedStatePosition + 1,
+            districtId = selectedDistrictPosition + 1,
+            batchReady = false,
+            needLoad = false,
+            goingForLoad = false
+        )
+
+        val call = ApiClient.retrofit
+            .create(ApiService::class.java)
+            .getUserList(request)
+
+        ApiHelper.post(
+            endpointCall = call,
+            onSuccess = { response ->
+                isLoading = false
+                if (response.isSuccess) {
+                    val fetchedUsers = response.item.items
+                    if (fetchedUsers.isEmpty()) {
+                        isLastPage = true
+                    } else {
+                        for (user in fetchedUsers) {
+                            val status = if (user.needLoad) "Status: Need Load" else "Status: No Need"
+                            val color = if (user.batchReady) "green" else "orange"
+
+                            val userModel = UserModel(
+                                role = UserRoles.getRoleNameById(user.roleID) ?: "Unknown",
+                                name = user.name ?: "No Name",
+                                detail = "Mobile: ${user.mobileNumber}",
+                                detail2 = "Property: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
+                                status = status,
+                                colorTemp = color
+                            )
+                            userList_1.add(userModel)
+                        }
+
+                        personAdapter.notifyDataSetChanged()
+                    }
+                }
+            },
+            onFailure = { error ->
+                isLoading = false
+                Log.e("Pagination", "Error: $error")
+            }
+        )
     }
 }

@@ -7,8 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.common.reflect.TypeToken
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
+import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.DBManager.State
+import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.UserItem
 import java.io.InputStreamReader
 
@@ -27,10 +29,19 @@ class SplashActivity : AppCompatActivity() {
 //                 uploadJsonToFirestore()
         
             //Delay
+            val signInStatus = SharedPreferencesManager.getSignedIn(this)
+        if (signInStatus) {
             Handler().postDelayed({
-            startActivity(Intent(this, WelcomeActivity::class.java))
-            finish()
+                startActivity(Intent(this, Dashboard::class.java))
+                finish()
             }, SPLASH_TIME)
+        } else {
+            Handler().postDelayed({
+                startActivity(Intent(this, WelcomeActivity::class.java))
+                finish()
+            }, SPLASH_TIME)
+        }
+
     }
 
     private fun checkFireStoreFile() {

@@ -18,6 +18,8 @@ data class UserItem(
     val longitude: Double,
     val batchReady: Boolean,
     val batchReadyUpdatedDateTime: String,
+    val needLoadUpdatedDateTime: String,
+    val goingForLoadUpdatedDateTime: String,
     val needLoad: Boolean,
     val goingForLoad: Boolean,
     val henCount: Int,

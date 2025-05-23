@@ -26,6 +26,8 @@ import com.google.gson.Gson
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Utils.ApiService
 import com.gsggroups.poultrymarket.base.ApiClient
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class Login : AppCompatActivity() {
@@ -68,7 +70,7 @@ class Login : AppCompatActivity() {
         // Enable the back button
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-//        supportActionBar?.setTitle(Html.fromHtml("<font color='#000000'>Registration</font>"))
+        supportActionBar?.setTitle(Html.fromHtml("<font color='#000000'>Registration</font>"))
     }
 
     private fun hideKeyboard() {
@@ -120,9 +122,15 @@ class Login : AppCompatActivity() {
             onSuccess = { response ->
                 if (response.isSuccess) {
                     val userDetails = response.item.userID  // This gets the UserDetails object
-                    val userPropertList = response.item.properties  // This gets the UserDetails object
+                    val userPropertId = response.item.properties[0].propertyID  // This gets the UserDetails object
                     val roleIDfromLogin = response.item.roleID  // This gets the UserDetails object
-                    val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime  // This gets the UserDetails object
+                    val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime
+                    val needLoadUpdatedDateTime = response.item.needLoadUpdatedDateTime
+                    val goingForLoadUpdatedTime = response.item.goingForLoadUpdatedDateTime
+                    val batchReadyBool = response.item.batchReady
+                    val needLoadBool = response.item.needLoad
+                    val goingForLoad = response.item.goingForLoad
+
 //                    if (userPropertList.isNotEmpty()) {
 //                        val firstPropertyId = userPropertList[0].propertyID
 //                        SharedPreferencesManager.savePropertyID(this, firstPropertyId)                    }
@@ -133,7 +141,26 @@ class Login : AppCompatActivity() {
                     //       intent.putExtra("getUserRequest", Gson().toJson(getUserListRequest))
                     SharedPreferencesManager.saveUserID(this, userDetails)
                     SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
-                    SharedPreferencesManager.saveLastSubmissionTime(this, batchReadyUpdatedDateTime)
+                    SharedPreferencesManager.savePropertyID(this, userPropertId)
+                    SharedPreferencesManager.saveSignedIn(this, true)
+                    if (batchReadyUpdatedDateTime != null && batchReadyBool) {
+                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, "0")
+                    }
+
+                    if (needLoadUpdatedDateTime != null && needLoadBool) {
+                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, "0")
+                    }
+
+                    if (goingForLoadUpdatedTime != null && goingForLoad) {
+                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, goingForLoadUpdatedTime)
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, "0")
+                    }
+
                     startActivity(Intent(this, Dashboard::class.java))
                     finish()
                     loader.hide()
@@ -156,9 +183,8 @@ class Login : AppCompatActivity() {
         )
     }
 
-    // Handle the back button click
     override fun onSupportNavigateUp(): Boolean {
-        finish() // Handle back navigation
+        redirectToRegistrationPage()
         return true
     }
 
@@ -166,12 +192,19 @@ class Login : AppCompatActivity() {
         if (shouldAllowBack()) {
             super.onBackPressed()
         } else {
+            redirectToRegistrationPage()
         }
     }
 
-    // Example condition method
     private fun shouldAllowBack(): Boolean {
-        // Replace with your condition
+        // You can customize this if needed
         return false
+    }
+
+    private fun redirectToRegistrationPage() {
+        val intent = Intent(this, WelcomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 }

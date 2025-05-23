@@ -38,7 +38,7 @@ class SetPasscode : AppCompatActivity() {
         setContentView(R.layout.set_passcode)
 
         phoneEditText = findViewById(R.id.phoneEditText)
-        passcodeEditText = findViewById(R.id.passcodeEditText)
+//        passcodeEditText = findViewById(R.id.passcodeEditText)
         setPinEditText = findViewById(R.id.setPinEditText)
         confirmPinEditText = findViewById(R.id.confirmPinEditText)
         submitButton = findViewById(R.id.Submit)
@@ -64,47 +64,48 @@ class SetPasscode : AppCompatActivity() {
     }
 
     private fun changePasscode(intent: Intent?) {
-        if (validateInputs()) {
             mobile = phoneEditText.text.toString()
             pin = setPinEditText.text.toString()
             newPin = confirmPinEditText.text.toString()
-        }
-        val passcodeRequest = PasscodeRequest(
-            phone = mobile,
-            pin=pin,
-            newPin=newPin
-        )
-        // Define the URL endpoint for submitting the passcode
-        val call = ApiClient.retrofit
-            .create(ApiService::class.java)
-            .changePin(passcodeRequest)
-        ApiHelper.post(
-            endpointCall = call,
-            onSuccess = { response ->
-                if (response.isSuccess) {
-                    loader.hide()
 
-                    val user = response.item
-                    println("User Registered: ${user}")
-                    startActivity(Intent(this, Login::class.java))
-                    finish()
-                    Toast.makeText(this, "Passcode changed successfully", Toast.LENGTH_SHORT).show()
-                } else if (response.message == "User not found") {
-                    showCustomdailogResponseValues(this, response.message)
-                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
-                } else if (response.message == "Invalid OTP") {
-                    showCustomdailogResponseValues(this, response.message)
-                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
-                } else {
-                    showCustomdailogResponseValues(this, response.message)
-                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
+            val passcodeRequest = PasscodeRequest(
+                phone = mobile,
+                pin = pin,
+                newPin = newPin
+            )
+            // Define the URL endpoint for submitting the passcode
+            val call = ApiClient.retrofit
+                .create(ApiService::class.java)
+                .changePin(passcodeRequest)
+            ApiHelper.post(
+                endpointCall = call,
+                onSuccess = { response ->
+                    if (response.isSuccess) {
+                        loader.hide()
+
+                        val user = response.item
+                        println("User Registered: ${user}")
+                        startActivity(Intent(this, Login::class.java))
+                        finish()
+                        Toast.makeText(this, "Passcode changed successfully", Toast.LENGTH_SHORT)
+                            .show()
+                    } else if (response.message == "User not found") {
+                        showCustomdailogResponseValues(this, response.message)
+                        Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
+                    } else if (response.message == "Invalid OTP") {
+                        showCustomdailogResponseValues(this, response.message)
+                        Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
+                    } else {
+                        showCustomdailogResponseValues(this, response.message)
+                        Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onFailure = { error ->
+                    showCustomdailogResponseValues(this, error.toString())
+                    Toast.makeText(this, "Error: ${error.toString()}", Toast.LENGTH_SHORT).show()
                 }
-            },
-            onFailure = { error ->
-                showCustomdailogResponseValues(this, error.toString())
-                Toast.makeText(this, "Error: ${error.toString()}", Toast.LENGTH_SHORT).show()
-            }
-        )
+            )
+
     }
 
     private fun hideKeyboard() {
@@ -115,7 +116,7 @@ class SetPasscode : AppCompatActivity() {
 
     private fun validateInputs(): Boolean {
         val phone = phoneEditText.text.toString()
-        val otp = passcodeEditText.text.toString()
+//        val otp = passcodeEditText.text.toString()
         val pin = setPinEditText.text.toString()
         val confirmPin = confirmPinEditText.text.toString()
 

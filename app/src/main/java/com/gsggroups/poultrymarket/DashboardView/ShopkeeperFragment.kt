@@ -59,6 +59,12 @@ class ShopkeeperFragment : Fragment() {
     var selectedDistrictPosition = 0
     private lateinit var loader: LoaderUtils
 
+    private var currentPage = 1
+    private var isLoading = false
+    private var isLastPage = false
+    private val pageSizeInitial = 20
+    private val pageSizeLoadMore = 10
+
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -156,7 +162,7 @@ class ShopkeeperFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        searchView = view.findViewById(R.id.searchView)
         stateSpinner = view.findViewById(R.id.shopkeeper_state_dropdown)
         districtSpinner = view.findViewById(R.id.shopkeeper_district_dropdown)
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -183,21 +189,33 @@ class ShopkeeperFragment : Fragment() {
             startActivity(intent)
         }
 
-        searchView = view.findViewById(R.id.searchView)
         setupSearchView()
 
         filterButton.setOnClickListener {
-            //Api call
-            val selectedState = stateSpinner.selectedItem.toString()
-            val selectedDistrict = districtSpinner.selectedItem.toString()
-
-            // Perform action with the selected values
-            Toast.makeText(
-                requireContext(),
-                "Selected State: $selectedState, District: $selectedDistrict",
-                Toast.LENGTH_LONG
-            ).show()
+            val userId = SharedPreferencesManager.getUserId(requireContext())
+            getUserList(userId)
         }
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                if (!isLoading && !isLastPage) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                        && firstVisibleItemPosition >= 0
+                        && totalItemCount >= pageSizeLoadMore
+                    ) {
+                        loadMoreItems()
+                    }
+                }
+            }
+        })
+
     }
 
     private fun setupSearchView() {
@@ -218,19 +236,19 @@ class ShopkeeperFragment : Fragment() {
     }
 
     private fun getUserList( userId: String?) {
-        //  loader.show()
+          loader.show()
         userList_1 = ArrayList()
 
         val request = GetUserList(
             userId = userId ?: "",
             roleId = UserRoles.ID_SHOPKEEPER,
             pageNumber = 1,
-            pageSize = 10,
-            search = "",
+            pageSize = 20,
+            search = searchView.query.toString(),
             sortColumn = "",
             sortDirection = "",
-            stateId = selectedStatePosition,
-            districtId = selectedDistrictPosition,
+            stateId = selectedStatePosition + 1,
+            districtId = selectedDistrictPosition + 1,
             batchReady = false,
             needLoad = false,
             goingForLoad = false
@@ -242,22 +260,39 @@ class ShopkeeperFragment : Fragment() {
             endpointCall = call,
             onSuccess = { response ->
                 if (response.isSuccess) {
+                    userList_1.clear()
+
                     val fetchedUsers = response.item.items
+                    if (fetchedUsers.isEmpty()) {
+                        loader.hide()
+                        personAdapter = RecyclerAdapter(userList_1) { /* item click logic */ }
+                        recyclerView.adapter = personAdapter
+                        return@post
+                    }
+
                     for (user in fetchedUsers) {
                         val status = when {
                             user.needLoad -> "Status: Need Load"
-                            else -> "Status: No Need"
+                            else -> "Status: Not Needed"
                         }
 
-                        val color = if (user.batchReady) "green" else "orange"
+                        val color = if (user.needLoad) "green" else "orange"
 
                         val userModel = UserModel(
                             role = getRoleName(user.roleID) ?: "Unknown",
                             name = user.name ?: "No Name",
                             detail = "Mobile: ${user.mobileNumber}",
-                            detail2 = "Property: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
+                            detail2 = "Shop Name: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
                             status = status,
-                            colorTemp = color
+                            colorTemp = color,
+                            batchReady = user.batchReady,
+                            needLoad = user.needLoad,
+                            goingForLoad = user.goingForLoad,
+                            batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
+                            needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
+                            goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime,
+                            stateID = user.stateID,
+                            districtID = user.districtID
                         )
                         userList_1.add(userModel)
                     }
@@ -272,12 +307,74 @@ class ShopkeeperFragment : Fragment() {
                     }
 
                     recyclerView.adapter = personAdapter
+                    loader.hide()
                 } else {
                     Log.e("Dashboard", "Error: ${response.message}")
                 }
             },
             onFailure = { error ->
                 Log.e("Dashboard", "Error: $error")
+            }
+        )
+    }
+
+
+
+    private fun loadMoreItems() {
+        isLoading = true
+        currentPage++
+
+        val userId = SharedPreferencesManager.getUserId(requireContext())
+        val request = GetUserList(
+            userId = userId ?: "",
+            roleId = UserRoles.ID_SHOPKEEPER,
+            pageNumber = currentPage,
+            pageSize = pageSizeLoadMore,
+            search = "",
+            sortColumn = "",
+            sortDirection = "",
+            stateId = selectedStatePosition,
+            districtId = selectedDistrictPosition,
+            batchReady = false,
+            needLoad = false,
+            goingForLoad = false
+        )
+
+        val call = ApiClient.retrofit
+            .create(ApiService::class.java)
+            .getUserList(request)
+
+        ApiHelper.post(
+            endpointCall = call,
+            onSuccess = { response ->
+                isLoading = false
+                if (response.isSuccess) {
+                    val fetchedUsers = response.item.items
+                    if (fetchedUsers.isEmpty()) {
+                        isLastPage = true
+                    } else {
+                        for (user in fetchedUsers) {
+                            val status = if (user.needLoad) "Status: Need Load" else "Status: Not Needed"
+                            val color = if (user.needLoad) "green" else "orange"
+
+                            val userModel = UserModel(
+                                role = UserRoles.getRoleNameById(user.roleID) ?: "Unknown",
+                                name = user.name ?: "No Name",
+                                detail = "Mobile: ${user.mobileNumber}",
+                                detail2 = "Property: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
+                                status = status,
+                                colorTemp = color
+                            )
+                            userList_1.add(userModel)
+                        }
+
+                        personAdapter.notifyDataSetChanged()
+                    }
+                }
+            },
+            onFailure = { error ->
+                isLoading = false
+                Log.e("Pagination", "Error: $error")
             }
         )
     }

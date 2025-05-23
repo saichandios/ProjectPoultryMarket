@@ -137,6 +137,16 @@ class Dashboard : AppCompatActivity() {
        load_switch = findViewById(R.id.toolbar_switch1)
        load_textView = findViewById(R.id.toolbar_switch1_text)
 
+        if(userRoleId == UserRoles.ID_FARMER) {
+            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeBatch(this)
+            load_switch.isChecked = !lastSubmitTime.isNullOrEmpty()
+            load_switch.isEnabled = false
+        } else if(userRoleId == UserRoles.ID_TRADER) {
+            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeNeed(this)
+            load_switch.isChecked = !lastSubmitTime.isNullOrEmpty()
+            load_switch.isEnabled = false
+        }
+
         // Set initial text color based on the default state of the switch
         load_textView.setTextColor(
             if (load_switch.isChecked) {
@@ -164,6 +174,12 @@ class Dashboard : AppCompatActivity() {
         going_switch = findViewById(R.id.toolbar_switch2)
         going_textView = findViewById(R.id.toolbar_switch2_text)
 
+        if (userRoleId == UserRoles.ID_TRADER) {
+            val lastSubmitTimeGoing = SharedPreferencesManager.getLastSubmitTimeGoing(this)
+            going_switch.isChecked = !lastSubmitTimeGoing.isNullOrEmpty()
+            going_switch.isEnabled = false
+        }
+
         // Set initial text color based on the default state of the switch
         going_textView.setTextColor(
             if (going_switch.isChecked) {
@@ -177,11 +193,14 @@ class Dashboard : AppCompatActivity() {
             if (isChecked) {
                 going_textView.setTextColor(Color.parseColor("#006400"))
                 going_textView.setTypeface(null, Typeface.BOLD)
+                loadFragment(GoingForLoadFragment())
+                highlightMenuItem(R.id.nav_GoingForLoad)
             } else {
                 going_textView.setTextColor(Color.RED)
                 going_textView.setTypeface(null, Typeface.NORMAL)
             }
         }
+
 
         if (userRoleName != null || userRoleName != "null") {
             setTextViewBasedOnRole(userRoleName, load_textView, going_textView, load_switch, going_switch)
@@ -353,7 +372,19 @@ class Dashboard : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onBackPressed() {
+        if(shouldAllowBack()) {
+            super.onBackPressed()
+        }
+        // Do nothing or show a toast if needed
+        // Toast.makeText(this, "Back disabled on Dashboard", Toast.LENGTH_SHORT).show()
+    }
 
+    // Example condition method
+    private fun shouldAllowBack(): Boolean {
+        // Replace with your condition
+        return false
+    }
 
 }
 

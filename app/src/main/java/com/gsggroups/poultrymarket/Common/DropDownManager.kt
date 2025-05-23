@@ -1,6 +1,9 @@
 package com.gsggroups.poultrymarket.Common
 
+
 object DropDownManager {
+
+    fun hasState(state: String): Boolean = districtsByState.containsKey(state)
 
     private var states = listOf(
         "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
@@ -57,4 +60,54 @@ object DropDownManager {
     fun getDistrictsForState(state: String): List<String> {
         return districtsByState[state] ?: emptyList()
     }
+
+    fun getStateNameById(stateId: Int): String? {
+        return if (stateId in 1..states.size) {
+            states[stateId - 1] // IDs start at 1, but list index starts at 0
+        } else {
+            null
+        }
+    }
+
+    fun getDistrictNameByIds(stateId: Int, districtId: Int): String? {
+        // First get state name from ID
+        val stateName = getStateNameById(stateId)
+
+        // Then get district list and district name from ID
+        val districts = stateName?.let { districtsByState[it] }
+        return if (districts != null && districtId in 1..districts.size) {
+            districts[districtId - 1] // ID starts at 1, list index at 0
+        } else {
+            null
+        }
+    }
+
 }
+
+/*
+val stateId = 5
+val stateName = DropDownManager.getStateNameById(stateId)
+
+if (stateName != null) {
+    println("State name: $stateName")
+} else {
+    println("Invalid state ID")
+}
+
+
+val stateId = 1       // e.g., Andhra Pradesh
+val districtId = 2    // e.g., Chittoor
+
+val districtName = DropDownManager.getDistrictNameByIds(stateId, districtId)
+
+if (districtName != null) {
+    println("District name: $districtName")
+} else {
+    println("Invalid state or district ID")
+}
+
+or
+
+val stateName = DropDownManager.getStateNameById(0) ?: "Invalid State"
+val districtName = DropDownManager.getDistrictNameByIds(0, 0) ?: "Invalid District"
+ */

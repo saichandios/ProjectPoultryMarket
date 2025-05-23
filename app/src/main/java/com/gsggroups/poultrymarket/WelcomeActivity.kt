@@ -123,7 +123,7 @@ class WelcomeActivity : AppCompatActivity() {
             val userRole = UserRoles.ROLE_EMPLOYEE // Employment = Employee
             SharedPreferencesManager.saveUserRole(context = this, role = userRole)
             SharedPreferencesManager.saveRoleID(context = this, UserRoles.ID_EMPLOYEE)
-            startActivity(intent)
+//            startActivity(intent)
         }
 
         ratesCapsule.setOnClickListener {

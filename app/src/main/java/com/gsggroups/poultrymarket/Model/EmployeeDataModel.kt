@@ -33,3 +33,19 @@ data class Rate(
     val rateSkinless: Float // Rate for skinless
 )
 
+data class SubmitLoadRequest(
+    val userId: String,
+    val propertyId: String,
+    val distrcitIds: List<Int>,
+    val message: String,
+    val roleId: Int,
+    val henCount: Int,
+    val henWeight: Float,
+    val loadAvailable: Boolean
+)
+
+data class SubmitLoadResponse(
+    val isSuccess: Boolean,
+    val message: String,
+    val item: Boolean
+)
