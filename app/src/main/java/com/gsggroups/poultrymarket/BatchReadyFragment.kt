@@ -58,6 +58,7 @@ class BatchReadyFragment : Fragment() {
     private lateinit var henSizeSpinner: Spinner
     private lateinit var farmSpinner: Spinner
     private lateinit var submitButton: Button
+    private lateinit var ActivateAllButton: Button
     private lateinit var loader: LoaderUtils
     var roleId: Int = 936
 
@@ -96,6 +97,7 @@ class BatchReadyFragment : Fragment() {
         henSizeSpinner = view.findViewById(R.id.hen_size_spinner) // use ID if set
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button)
+        ActivateAllButton = view.findViewById(R.id.completed_activate_all_button)
 
         // Set up a listener to change text color based on switch state
         load_available_switch.setOnCheckedChangeListener { _, isChecked ->
@@ -121,6 +123,10 @@ class BatchReadyFragment : Fragment() {
         headingText.text = loadDescription
         val editTextSalary = view.findViewById<EditText>(R.id.text_hen_count)
         formatIndianCurrency(editTextSalary)
+
+        ActivateAllButton.setOnClickListener {
+            
+        }
 
         submitButton.setOnClickListener {
             val henCount = henCountEditText.text.toString().trim()
@@ -164,9 +170,15 @@ class BatchReadyFragment : Fragment() {
             val now = java.time.LocalDateTime.now()
 
             val duration = java.time.Duration.between(lastTime, now)
-            if (duration.toHours() < 24) {
+            val maxDuration = java.time.Duration.ofHours(24)
+
+            if (duration < maxDuration) {
+                val remaining = maxDuration.minus(duration)
+                val hours = remaining.toHours()
+                val minutes = remaining.toMinutes() % 60
+
                 submitButton.isEnabled = true
-                submitButton.text = "Submitted (Wait 24 hrs)"
+                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
             } else {
                 submitButton.isEnabled = true

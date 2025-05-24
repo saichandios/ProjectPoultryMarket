@@ -3,18 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="8dp"
     tools:context=".DashboardView.FarmerFragment">
 
     <!-- Search Bar -->
     <androidx.appcompat.widget.SearchView
-        android:id="@+id/searchView"
+        android:id="@+id/searchViewShopkeeper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:queryHint="Search items..."
         android:iconifiedByDefault="false"
-        android:background="@android:drawable/editbox_background"/>
+        android:queryHint="Search Farms..."
+        android:background="@android:drawable/editbox_background"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:iconifiedByDefault="false" />
+
 
     <!-- Horizontal Layout for Dropdowns (State and District) -->
     <LinearLayout

@@ -136,4 +136,14 @@
         android:backgroundTint="@color/bgButtonColor"
         android:textColor="#FFFFFF"/>
 
+    <Button
+        android:id="@+id/completed_activate_all_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Completed, Activate All"
+        android:textSize="16sp"
+        android:backgroundTint="@color/bgButtonColor"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="10dp"/>
+
 </LinearLayout>

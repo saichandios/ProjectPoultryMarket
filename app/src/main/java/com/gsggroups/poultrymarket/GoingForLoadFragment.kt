@@ -141,9 +141,15 @@ class GoingForLoadFragment : Fragment() {
             val now = java.time.LocalDateTime.now()
 
             val duration = java.time.Duration.between(lastTime, now)
-            if (duration.toHours() < 24) {
+            val maxDuration = java.time.Duration.ofHours(24)
+
+            if (duration < maxDuration) {
+                val remaining = maxDuration.minus(duration)
+                val hours = remaining.toHours()
+                val minutes = remaining.toMinutes() % 60
+
                 submitButton.isEnabled = true
-                submitButton.text = "Submitted (Wait 24 hrs)"
+                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
             } else {
                 submitButton.isEnabled = true

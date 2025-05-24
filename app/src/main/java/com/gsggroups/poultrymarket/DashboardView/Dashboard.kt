@@ -43,6 +43,9 @@ import com.gsggroups.poultrymarket.NotificationTabLayoutFragment
 import com.gsggroups.poultrymarket.RegisterSingup
 import com.gsggroups.poultrymarket.TablayoutFragment
 import com.gsggroups.poultrymarket.UserInfo
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class Dashboard : AppCompatActivity() {
@@ -138,13 +141,35 @@ class Dashboard : AppCompatActivity() {
        load_textView = findViewById(R.id.toolbar_switch1_text)
 
         if(userRoleId == UserRoles.ID_FARMER) {
-            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeBatch(this)
-            load_switch.isChecked = !lastSubmitTime.isNullOrEmpty()
-            load_switch.isEnabled = false
+            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeNeed(this)
+            val isFirstSubmission = lastSubmitTime == "0"
+            val isWithin24Hours = if (!isFirstSubmission) {
+                val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                val lastTime = LocalDateTime.parse(lastSubmitTime, formatter)
+                val currentTime = LocalDateTime.now()
+                Duration.between(lastTime, currentTime).toHours() < 24
+            } else {
+                false
+            }
+
+            val shouldEnableSwitch = isFirstSubmission || isWithin24Hours
+            load_switch.isChecked = shouldEnableSwitch
+            load_switch.isEnabled = !shouldEnableSwitch
         } else if(userRoleId == UserRoles.ID_TRADER) {
             val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeNeed(this)
-            load_switch.isChecked = !lastSubmitTime.isNullOrEmpty()
-            load_switch.isEnabled = false
+            val isFirstSubmission = lastSubmitTime == "0"
+            val isWithin24Hours = if (!isFirstSubmission) {
+                val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                val lastTime = LocalDateTime.parse(lastSubmitTime, formatter)
+                val currentTime = LocalDateTime.now()
+                Duration.between(lastTime, currentTime).toHours() < 24
+            } else {
+                false
+            }
+
+            val shouldEnableSwitch = isFirstSubmission || isWithin24Hours
+            load_switch.isChecked = shouldEnableSwitch
+            load_switch.isEnabled = !shouldEnableSwitch
         }
 
         // Set initial text color based on the default state of the switch
@@ -176,8 +201,19 @@ class Dashboard : AppCompatActivity() {
 
         if (userRoleId == UserRoles.ID_TRADER) {
             val lastSubmitTimeGoing = SharedPreferencesManager.getLastSubmitTimeGoing(this)
-            going_switch.isChecked = !lastSubmitTimeGoing.isNullOrEmpty()
-            going_switch.isEnabled = false
+            val isFirstSubmission = lastSubmitTimeGoing == "0"
+            val isWithin24Hours = if (!isFirstSubmission) {
+                val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                val lastTime = LocalDateTime.parse(lastSubmitTimeGoing, formatter)
+                val currentTime = LocalDateTime.now()
+                Duration.between(lastTime, currentTime).toHours() < 24
+            } else {
+                false
+            }
+
+            val shouldEnableSwitch = isFirstSubmission || isWithin24Hours
+            going_switch.isChecked = shouldEnableSwitch
+            going_switch.isEnabled = !shouldEnableSwitch
         }
 
         // Set initial text color based on the default state of the switch
@@ -204,6 +240,12 @@ class Dashboard : AppCompatActivity() {
 
         if (userRoleName != null || userRoleName != "null") {
             setTextViewBasedOnRole(userRoleName, load_textView, going_textView, load_switch, going_switch)
+        }
+
+        if(userRoleId == UserRoles.ID_TRADER) {
+            menu.findItem(R.id.nav_GoingForLoad).isVisible = true
+        } else {
+            menu.findItem(R.id.nav_GoingForLoad).isVisible = false
         }
     }
 

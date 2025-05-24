@@ -59,9 +59,9 @@ class RecyclerAdapter(private var userList: ArrayList<UserModel>,
             filteredList.addAll(userList)
         } else {
             val filtered = when (lowerQuery) {
-                "batch" -> userList.filter { it.batchReady }
-                "need" -> userList.filter { it.needLoad }
-                "going" -> userList.filter { it.goingForLoad }
+                "batchready" -> userList.filter { it.batchReady }
+                "needload" -> userList.filter { it.needLoad }
+                "goingforload" -> userList.filter { it.goingForLoad }
                 else -> userList.filter {
                     val stateName = DropDownManager.getStateNameById(it.stateID)?.lowercase()
                     val districtName =
@@ -114,7 +114,7 @@ class RecyclerAdapter(private var userList: ArrayList<UserModel>,
             val farmText = itemView.findViewById<TextView>(R.id.tvProperty)
             farmText.text = user.detail2 // farm name
             val detailText = itemView.findViewById<TextView>(R.id.tvState)
-            detailText.text = user.detail // mobile
+//            detailText.text = user.detail // mobile
 
             val detail2Text = itemView.findViewById<TextView>(R.id.tvDistrict)
             val stateName = DropDownManager.getStateNameById(user.stateID)

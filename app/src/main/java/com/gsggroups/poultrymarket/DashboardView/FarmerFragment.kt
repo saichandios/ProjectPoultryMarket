@@ -3,17 +3,24 @@ package com.gsggroups.poultrymarket.DashboardView
 import Person
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ListPopupWindow
+import android.widget.PopupWindow
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -60,6 +67,7 @@ class FarmerFragment : Fragment() {
     var selectedStatePosition = 0
     var selectedDistrictPosition = 0
     private lateinit var loader: LoaderUtils
+
 
     private var currentPage = 1
     private var isLoading = false
@@ -156,7 +164,7 @@ class FarmerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        searchView = view.findViewById(R.id.searchView)
+        searchView = view.findViewById(R.id.searchViewFarmer)
         stateSpinner = view.findViewById(R.id.farmer_state_dropdown)
         districtSpinner = view.findViewById(R.id.farmer_district_dropdown)
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
@@ -217,7 +225,7 @@ class FarmerFragment : Fragment() {
     }
 
     private fun getUserList( userId: String?) {
-          loader.show()
+        loader.show()
         userList_1 = ArrayList()
 
         val request = GetUserList(
@@ -300,12 +308,29 @@ class FarmerFragment : Fragment() {
             }
         )
 
+
+//       private fun setupSearchView() {
+//        searchView.setIconifiedByDefault(false)
+//            // Set up listener for text changes in SearchView
+//            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+//            override fun onQueryTextSubmit(query: String?): Boolean {
+//                return false
+//            }
+//            override fun onQueryTextChange(newText: String?): Boolean {
+//                personAdapter.filter(newText ?: "")
+//                return true
+//            }
+//             })
+//        }
     }
-        private fun setupSearchView() {
+
+
+
+    private fun setupSearchView() {
         searchView.setIconifiedByDefault(false)
 
-            // Set up listener for text changes in SearchView
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        // Listen for query text changes
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -314,9 +339,79 @@ class FarmerFragment : Fragment() {
                 personAdapter.filter(newText ?: "")
                 return true
             }
-             })
+        })
+
+        // Add touch listener to detect drawable (e.g., right icon) click
+        val searchEditText = searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
+        searchEditText.setOnTouchListener { v, event ->
+            val drawableEnd = searchEditText.compoundDrawables[2] // Right drawable
+            if (drawableEnd != null && event.action == MotionEvent.ACTION_UP) {
+                val drawableWidth = drawableEnd.bounds.width()
+                if (event.rawX >= (searchEditText.right - drawableWidth)) {
+                    showHistoryPopup(searchEditText)
+                    return@setOnTouchListener true
+                }
+            }
+            false
         }
 
+        // Show popup when SearchView is clicked
+        searchView.setOnClickListener {
+            showHistoryPopup(searchView)
+        }
+
+        // Also optional: Show popup when SearchView gains focus (in case user taps into the field)
+        searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                showHistoryPopup(searchView)
+            }
+        }
+    }
+
+    private fun showHistoryPopup(anchor: View) {
+        val inflater = LayoutInflater.from(requireContext())
+        val popupView = inflater.inflate(R.layout.popup_history, null)
+
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val popupWidth = (screenWidth * 0.5).toInt() // 75% of screen width
+
+        val popupWindow = PopupWindow(
+            popupView,
+            popupWidth,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            true
+        )
+        popupWindow.setBackgroundDrawable(ColorDrawable()) // Enables outside touch dismissal
+        popupWindow.elevation = 10f
+
+        popupWindow.showAsDropDown(anchor)
+
+        val itemBatchReady = popupView.findViewById<TextView>(R.id.itemBatchReady)
+        val itemNeedLoad = popupView.findViewById<TextView>(R.id.itemNeedLoad)
+        val itemGoingForLoad = popupView.findViewById<TextView>(R.id.itemGoingForLoad)
+
+        itemBatchReady.setOnClickListener {
+            val query = "batchready"
+            searchView.setQuery(query, false)
+            personAdapter.filter(query)
+            popupWindow.dismiss()
+        }
+
+        itemNeedLoad.setOnClickListener {
+            val query = "needload"
+            searchView.setQuery(query, false)
+            personAdapter.filter(query)
+            popupWindow.dismiss()
+        }
+
+        itemGoingForLoad.setOnClickListener {
+            val query = "goingforload"
+            searchView.setQuery(query, false)
+            personAdapter.filter(query)
+            popupWindow.dismiss()
+        }
+    }
 
 
     private fun loadMoreItems() {
