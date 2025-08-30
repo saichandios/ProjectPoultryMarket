@@ -306,12 +306,12 @@ class ShopkeeperFragment : Fragment() {
         val itemNeedLoad = popupView.findViewById<TextView>(R.id.itemNeedLoad)
         val itemGoingForLoad = popupView.findViewById<TextView>(R.id.itemGoingForLoad)
 
-        itemBatchReady.setOnClickListener {
-            val query = "batchready"
-            searchView.setQuery(query, false)
-            personAdapter.filter(query)
-            popupWindow.dismiss()
-        }
+//        itemBatchReady.setOnClickListener {
+//            val query = "batchready"
+//            searchView.setQuery(query, false)
+//            personAdapter.filter(query)
+//            popupWindow.dismiss()
+//        }
 
         itemNeedLoad.setOnClickListener {
             val query = "needload"
@@ -320,12 +320,15 @@ class ShopkeeperFragment : Fragment() {
             popupWindow.dismiss()
         }
 
-        itemGoingForLoad.setOnClickListener {
-            val query = "goingforload"
-            searchView.setQuery(query, false)
-            personAdapter.filter(query)
-            popupWindow.dismiss()
-        }
+        itemBatchReady.visibility = View.GONE
+        itemGoingForLoad.visibility = View.GONE
+
+//        itemGoingForLoad.setOnClickListener {
+//            val query = "goingforload"
+//            searchView.setQuery(query, false)
+//            personAdapter.filter(query)
+//            popupWindow.dismiss()
+//        }
     }
 
     private fun getUserList( userId: String?) {
@@ -340,8 +343,8 @@ class ShopkeeperFragment : Fragment() {
             search = searchView.query.toString(),
             sortColumn = "",
             sortDirection = "",
-            stateId = selectedStatePosition + 1,
-            districtId = selectedDistrictPosition + 1,
+            stateId = selectedStatePosition,
+            districtId = selectedDistrictPosition,
             batchReady = false,
             needLoad = false,
             goingForLoad = false
@@ -360,6 +363,14 @@ class ShopkeeperFragment : Fragment() {
                         loader.hide()
                         personAdapter = RecyclerAdapter(userList_1) { /* item click logic */ }
                         recyclerView.adapter = personAdapter
+                        CustomAlertDialog(requireContext())
+                            .setTitle("No data found!")
+                            .setDescription("Shopkeepers are not available")
+                            .showOkButton(true, "OK") {
+                                println("User acknowledged the error.")
+                            }
+                            .showCancelButton(false)
+                            .show()
                         return@post
                     }
 

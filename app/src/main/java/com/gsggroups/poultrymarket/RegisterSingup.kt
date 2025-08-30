@@ -269,7 +269,7 @@ class RegisterSingup: AppCompatActivity() {
         }
 
         // Get full list once for reuse
-        val states = DropDownManager.getStates()
+        val states = DropDownManager.getStates().drop(1)
 
 
 // Adapter for states
@@ -287,7 +287,7 @@ class RegisterSingup: AppCompatActivity() {
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 // Store selected state position
-                selectedStatePosition = position
+                selectedStatePosition = position + 1
 
                 // Get the districts for this state
                 val selectedState = states[position]
@@ -520,8 +520,8 @@ class RegisterSingup: AppCompatActivity() {
                 name = name,
                 mobileNumber = mobile,
                 pin = pin,
-                stateID = selectedStatePosition + 1,
-                districtID = selectedDistrictPosition + 1,
+                stateID = selectedStatePosition,
+                districtID = selectedDistrictPosition,
                 cityID = 0,
                 latitude = farmLat,
                 longitude = farmLong,

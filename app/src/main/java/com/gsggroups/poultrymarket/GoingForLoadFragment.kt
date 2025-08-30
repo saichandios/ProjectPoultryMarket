@@ -17,11 +17,13 @@ import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.Model.SubmitLoadRequest
+import com.gsggroups.poultrymarket.SharedDataFiles.SharedViewModel
 import com.gsggroups.poultrymarket.Utils.ApiService
 import com.gsggroups.poultrymarket.base.ApiClient
 import java.text.DecimalFormat
@@ -48,6 +50,7 @@ class GoingForLoadFragment : Fragment() {
     private lateinit var submitButton: Button
     private lateinit var loader: LoaderUtils
     var roleId: Int = 936
+    private lateinit var sharedViewModel: SharedViewModel
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -84,6 +87,7 @@ class GoingForLoadFragment : Fragment() {
         henSizeSpinner = view.findViewById(R.id.hen_size_spinner) // use ID if set
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button)
+        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         // Set up a listener to change text color based on switch state
         load_available_switch.setOnCheckedChangeListener { _, isChecked ->
@@ -148,9 +152,12 @@ class GoingForLoadFragment : Fragment() {
                 val hours = remaining.toHours()
                 val minutes = remaining.toMinutes() % 60
 
-                submitButton.isEnabled = true
+                submitButton.isEnabled = false
                 submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                sharedViewModel.setGoingForLoad(true)
+
             } else {
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
@@ -230,7 +237,7 @@ class GoingForLoadFragment : Fragment() {
             roleId = roleId,
             henCount = henCount,
             henWeight = henSizeFloat,
-            loadAvailable = true
+            goingForLoad = true
         )
 
         val call = ApiClient.retrofit

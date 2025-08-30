@@ -305,12 +305,13 @@ class TraderFragment : Fragment() {
         val itemNeedLoad = popupView.findViewById<TextView>(R.id.itemNeedLoad)
         val itemGoingForLoad = popupView.findViewById<TextView>(R.id.itemGoingForLoad)
 
-        itemBatchReady.setOnClickListener {
-            val query = "batchready"
-            searchView.setQuery(query, false)
-            personAdapter.filter(query)
-            popupWindow.dismiss()
-        }
+//        itemBatchReady.setOnClickListener {
+//            val query = "batchready"
+//            searchView.setQuery(query, false)
+//            personAdapter.filter(query)
+//            popupWindow.dismiss()
+//        }
+        itemBatchReady.visibility = View.GONE
 
         itemNeedLoad.setOnClickListener {
             val query = "needload"
@@ -339,8 +340,8 @@ class TraderFragment : Fragment() {
             search = searchView.query.toString(),
             sortColumn = "",
             sortDirection = "",
-            stateId = selectedStatePosition + 1,
-            districtId = selectedDistrictPosition + 1,
+            stateId = selectedStatePosition,
+            districtId = selectedDistrictPosition,
             batchReady = false,
             needLoad = false,
             goingForLoad = false
@@ -356,9 +357,17 @@ class TraderFragment : Fragment() {
 
                     val fetchedUsers = response.item.items
                     if (fetchedUsers.isEmpty()) {
-
+                        loader.hide()
                         personAdapter = RecyclerAdapter(userList_1) { /* item click logic */ }
                         recyclerView.adapter = personAdapter
+                        CustomAlertDialog(requireContext())
+                        .setTitle("No data found!")
+                        .setDescription("Traders are not available")
+                        .showOkButton(true, "OK") {
+                            println("User acknowledged the error.")
+                        }
+                        .showCancelButton(false)
+                        .show()
                         return@post
                     }
 
@@ -423,8 +432,8 @@ class TraderFragment : Fragment() {
             search = "",
             sortColumn = "",
             sortDirection = "",
-            stateId = selectedStatePosition + 1,
-            districtId = selectedDistrictPosition + 1,
+            stateId = selectedStatePosition,
+            districtId = selectedDistrictPosition,
             batchReady = false,
             needLoad = false,
             goingForLoad = false

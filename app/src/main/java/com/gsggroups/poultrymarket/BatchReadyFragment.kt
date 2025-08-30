@@ -18,6 +18,7 @@ import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
@@ -27,6 +28,7 @@ import com.gsggroups.poultrymarket.Employement.EmployeDetails
 import com.gsggroups.poultrymarket.Model.GetUserList
 import com.gsggroups.poultrymarket.Model.SubmitLoadRequest
 import com.gsggroups.poultrymarket.Model.UserModel
+import com.gsggroups.poultrymarket.SharedDataFiles.SharedViewModel
 import com.gsggroups.poultrymarket.Utils.ApiService
 import com.gsggroups.poultrymarket.Utils.getRoleName
 import com.gsggroups.poultrymarket.base.ApiClient
@@ -61,6 +63,8 @@ class BatchReadyFragment : Fragment() {
     private lateinit var ActivateAllButton: Button
     private lateinit var loader: LoaderUtils
     var roleId: Int = 936
+
+    private lateinit var sharedViewModel: SharedViewModel
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -98,6 +102,7 @@ class BatchReadyFragment : Fragment() {
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button)
         ActivateAllButton = view.findViewById(R.id.completed_activate_all_button)
+        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         // Set up a listener to change text color based on switch state
         load_available_switch.setOnCheckedChangeListener { _, isChecked ->
@@ -177,9 +182,10 @@ class BatchReadyFragment : Fragment() {
                 val hours = remaining.toHours()
                 val minutes = remaining.toMinutes() % 60
 
-                submitButton.isEnabled = true
+                submitButton.isEnabled = false
                 submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+                sharedViewModel.setBatchReady(true)
             } else {
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
@@ -192,7 +198,6 @@ class BatchReadyFragment : Fragment() {
             submitButton.text = "Submit"
             submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
         }
-
     }
 
     fun formatIndianCurrency(editText: EditText) {
@@ -280,7 +285,8 @@ class BatchReadyFragment : Fragment() {
             roleId = roleId,
             henCount = henCount.toInt(),
             henWeight = henSizeFloat,
-            loadAvailable = true
+            loadAvailable = true,
+            needLoad = true
         )
 
         val call = if (roleId == UserRoles.ID_FARMER) {

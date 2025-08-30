@@ -41,7 +41,9 @@ data class SubmitLoadRequest(
     val roleId: Int,
     val henCount: Int,
     val henWeight: Float,
-    val loadAvailable: Boolean
+    val goingForLoad: Boolean = false,
+    val needLoad: Boolean = false,
+    val loadAvailable: Boolean = false
 )
 
 data class SubmitLoadResponse(
