@@ -48,6 +48,7 @@ class GoingForLoadFragment : Fragment() {
     private lateinit var henSizeSpinner: Spinner
     private lateinit var farmSpinner: Spinner
     private lateinit var submitButton: Button
+    private lateinit var activateAllButton: Button
     private lateinit var loader: LoaderUtils
     var roleId: Int = 936
     private lateinit var sharedViewModel: SharedViewModel
@@ -87,6 +88,7 @@ class GoingForLoadFragment : Fragment() {
         henSizeSpinner = view.findViewById(R.id.hen_size_spinner) // use ID if set
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button)
+        activateAllButton = view.findViewById(R.id.completed_activate_all_button)
         sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         // Set up a listener to change text color based on switch state
@@ -102,11 +104,40 @@ class GoingForLoadFragment : Fragment() {
 
         val userId = SharedPreferencesManager.getUserId(requireContext())
         val propertyId = SharedPreferencesManager.getPropertyId(requireContext())
+        var loadDescription = "Going for Load"
+
         roleId = SharedPreferencesManager.getRoleId(requireContext())?.toInt() ?: 936
         val districtIds = listOf(1)
         headingText.text = "Going for Load"
+
         val editTextSalary = view.findViewById<EditText>(R.id.text_hen_count)
         formatIndianCurrency(editTextSalary)
+        activateAllButton.setOnClickListener {
+            val henSizeFromShared = SharedPreferencesManager.getHenSizeSubmit(requireContext())
+            val henCountFromShared = SharedPreferencesManager.getHenCountSubmit(requireContext())
+            // Submit after all validations passed
+            if (propertyId != null) {
+                if (userId != null) {
+                    if (henSizeFromShared != null) {
+                        henCountFromShared?.let { it1 ->
+                            submitLoadRequest(
+                                userId,
+                                propertyId,
+                                loadDescription,
+                                henCountFromShared,
+                                henSizeFromShared,
+                                isActivate = false,
+                                isFromSubmit = false
+
+                            )
+                            sharedViewModel.setGoingForLoad(false) // Turn switch ON
+
+                        }
+                    }
+                }
+            }
+
+        }
 
         submitButton.setOnClickListener {
             val henCount = henCountEditText.text.toString().trim()
@@ -131,7 +162,17 @@ class GoingForLoadFragment : Fragment() {
             }
 
             // Submit after all validations passed
-            submitLoadRequest(userId, propertyId)
+            submitLoadRequest(
+                userId,
+                propertyId,
+                loadDescription,
+                henCount,
+                selectedHenSize,
+                true,
+                true
+            )
+            sharedViewModel.setGoingForLoad(true)
+
         }
 
         checkAndDisableButtonIfNeeded()
@@ -139,7 +180,7 @@ class GoingForLoadFragment : Fragment() {
 
     private fun checkAndDisableButtonIfNeeded() {
         var lastSubmit = SharedPreferencesManager.getLastSubmitTimeGoing(requireContext()).toString()
-        if (lastSubmit != null && lastSubmit != "0") {
+        if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
             val formatter = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
             val lastTime = java.time.LocalDateTime.parse(lastSubmit, formatter)
             val now = java.time.LocalDateTime.now()
@@ -168,6 +209,7 @@ class GoingForLoadFragment : Fragment() {
             submitButton.isEnabled = true
             submitButton.text = "Submit"
             submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+            activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
         }
 
     }
@@ -216,7 +258,12 @@ class GoingForLoadFragment : Fragment() {
 
     private fun submitLoadRequest(
         userId: String,
-        propertyId: String
+        propertyId: String,
+        loadDescription: String,
+        henCountFromShared: String,
+        henSizeFromShared: String,
+        isActivate: Boolean,
+        isFromSubmit: Boolean
     ) {
         loader.show()
         val henCount = henCountEditText.text.toString()
@@ -237,7 +284,7 @@ class GoingForLoadFragment : Fragment() {
             roleId = roleId,
             henCount = henCount,
             henWeight = henSizeFloat,
-            goingForLoad = true
+            goingForLoad = isActivate
         )
 
         val call = ApiClient.retrofit
@@ -246,25 +293,67 @@ class GoingForLoadFragment : Fragment() {
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
+                val ctx = activity?.applicationContext  // safer than requireContext()
+
                 if (response.isSuccess) {
-                    Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
-                    submitButton.isEnabled = false
-                    submitButton.text = "Submitted (Wait 24 hrs)"
-                    submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+                    ctx?.let {
+                        Toast.makeText(it, response.message, Toast.LENGTH_LONG).show()
+                    }
+                    if (isFromSubmit) {
+                        // 🔹 Submit clicked: disable submit, enable ActivateAll
+                        submitButton.isEnabled = false
+                        submitButton.text = "Submitted (Wait 24 hrs)"
+                        submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                        activateAllButton.isEnabled = true
+                        activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
+                        // Save last submit time
+                        when (roleId) {
+                            UserRoles.ID_FARMER -> SharedPreferencesManager.saveLastSubmitTimeBatch(
+                                requireContext(),
+                                DateTimeUtils.formattedDateTime
+                            )
+
+                            UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeNeed(
+                                requireContext(),
+                                DateTimeUtils.formattedDateTime
+                            )
+
+                            else -> SharedPreferencesManager.saveLastSubmitTimeGoing(
+                                requireContext(),
+                                DateTimeUtils.formattedDateTime
+                            )
+                        }
+                    } else {
+                        // 🔹 ActivateAll clicked: disable ActivateAll, enable Submit
+                        activateAllButton.isEnabled = false
+                        activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                        submitButton.isEnabled = true
+                        submitButton.text = "Submit"
+                        submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                        SharedPreferencesManager.clearLastSubmitTimeGoing(requireContext())
+                        sharedViewModel.setGoingForLoad(false) // dashboard switch red
+
+                    }
+
+                    // reset input fields
                     henCountEditText.text.clear()
                     henSizeSpinner.setSelection(0)
-                    SharedPreferencesManager.saveLastSubmitTimeGoing(
-                            requireContext(),
-                            DateTimeUtils.formattedDateTime)
                 } else {
                     Log.e("SubmitLoad", "Failed: ${response.message}")
-                    Toast.makeText(context, "Submit failed: ${response.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Submit failed: ${response.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 loader.hide()
             },
             onFailure = { error ->
                 Log.e("SubmitLoad", "Error: $error")
-                Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                 loader.hide()
             }
         )
