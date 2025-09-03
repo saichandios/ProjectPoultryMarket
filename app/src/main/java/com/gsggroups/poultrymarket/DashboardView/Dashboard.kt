@@ -9,28 +9,22 @@ import android.os.Handler
 import android.os.Looper
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import com.gsggroups.poultrymarket.R
-import com.gsggroups.poultrymarket.databinding.ActivityDashboardBinding
-
-import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
-
 import android.widget.ImageView
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
+import com.google.android.material.navigation.NavigationView
 import com.gsggroups.poultrymarket.BatchReadyFragment
 import com.gsggroups.poultrymarket.ChickenRatesFragment
+import com.gsggroups.poultrymarket.Common.ApiHelper
+import com.gsggroups.poultrymarket.Common.CustomAlertDialog
 import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
@@ -39,15 +33,16 @@ import com.gsggroups.poultrymarket.EggRatesFragment
 import com.gsggroups.poultrymarket.EmployeeTabLayout
 import com.gsggroups.poultrymarket.GoingForLoadFragment
 import com.gsggroups.poultrymarket.Login
+import com.gsggroups.poultrymarket.Model.LoginRequest
 import com.gsggroups.poultrymarket.NeedEmployee
 import com.gsggroups.poultrymarket.NotificationTabLayoutFragment
-import com.gsggroups.poultrymarket.RegisterSingup
+import com.gsggroups.poultrymarket.R
 import com.gsggroups.poultrymarket.SharedDataFiles.SharedViewModel
 import com.gsggroups.poultrymarket.TablayoutFragment
 import com.gsggroups.poultrymarket.UserInfo
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import com.gsggroups.poultrymarket.Utils.ApiService
+import com.gsggroups.poultrymarket.base.ApiClient
+import com.gsggroups.poultrymarket.databinding.ActivityDashboardBinding
 
 
 class Dashboard : AppCompatActivity() {
@@ -62,6 +57,7 @@ class Dashboard : AppCompatActivity() {
     private lateinit var toggle: ActionBarDrawerToggle
 
     private var currentFragment: Fragment? = null
+    private var loginCalled = false  // 🔹 flag
 
     private lateinit var loader: LoaderUtils
     var userRoleId: Int = 0
@@ -77,11 +73,14 @@ class Dashboard : AppCompatActivity() {
         // Initialize DrawerLayout and NavigationView
         drawerLayout = binding.drawerLayout
         navView = binding.navigationView
-
         userRoleId = SharedPreferencesManager.getRoleId(this)?.toInt() ?: 0
         userRoleName = UserRoles.getRoleNameById(userRoleId).toString()
 
         loader = LoaderUtils(this)
+        if (!loginCalled) {
+            getLoadData()
+        }
+
         loader.show()
         Handler(Looper.getMainLooper()).postDelayed({
             loader.hide()
@@ -107,13 +106,13 @@ class Dashboard : AppCompatActivity() {
 
         val menu = navView.menu
         val navBatchReadyItem: MenuItem = menu.findItem(R.id.nav_BatchReady)
-            if (userRoleName == UserRoles.ROLE_FARMER) {
-                navBatchReadyItem.title = "Batch Ready"
-            } else if (userRoleName == UserRoles.ROLE_TRADER) {
-                navBatchReadyItem.title = "Need Load"
-            } else {
-                navBatchReadyItem.title = "Need Load"
-            }
+        if (userRoleName == UserRoles.ROLE_FARMER) {
+            navBatchReadyItem.title = "Batch Ready"
+        } else if (userRoleName == UserRoles.ROLE_TRADER) {
+            navBatchReadyItem.title = "Need Load"
+        } else {
+            navBatchReadyItem.title = "Need Load"
+        }
 
 
         // Handle Hamburger Icon click to open drawer
@@ -140,8 +139,8 @@ class Dashboard : AppCompatActivity() {
 
 
         //-----------------------------------------------------------------
-       load_switch = findViewById(R.id.toolbar_switch1)
-       load_textView = findViewById(R.id.toolbar_switch1_text)
+        load_switch = findViewById(R.id.toolbar_switch1)
+        load_textView = findViewById(R.id.toolbar_switch1_text)
 
         going_switch = findViewById(R.id.toolbar_switch2)
         going_textView = findViewById(R.id.toolbar_switch2_text)
@@ -149,7 +148,7 @@ class Dashboard : AppCompatActivity() {
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
 
-        if(userRoleId == UserRoles.ID_FARMER) {
+        if (userRoleId == UserRoles.ID_FARMER) {
             sharedViewModel.batchReady.observe(this) { isReady ->
                 load_switch.isChecked = isReady
             }
@@ -157,7 +156,7 @@ class Dashboard : AppCompatActivity() {
             val hasValue = !lastSubmitTime.isNullOrEmpty() && lastSubmitTime != "0"
             load_switch.isChecked = hasValue
             load_switch.isEnabled = !hasValue
-        } else if(userRoleId == UserRoles.ID_TRADER) {
+        } else if (userRoleId == UserRoles.ID_TRADER) {
             sharedViewModel.needLoad.observe(this) { isNeeded ->
                 load_switch.isChecked = isNeeded
             }
@@ -176,7 +175,7 @@ class Dashboard : AppCompatActivity() {
             going_switch.isChecked = hasGoingValue
             going_switch.isEnabled = !hasGoingValue
 
-        } else if(userRoleId == UserRoles.ID_SHOPKEEPER) {
+        } else if (userRoleId == UserRoles.ID_SHOPKEEPER) {
             sharedViewModel.needLoad.observe(this) { isNeeded ->
                 load_switch.isChecked = isNeeded
             }
@@ -232,14 +231,34 @@ class Dashboard : AppCompatActivity() {
 
 
         if (userRoleName != null || userRoleName != "null") {
-            setTextViewBasedOnRole(userRoleName, load_textView, going_textView, load_switch, going_switch)
+            setTextViewBasedOnRole(
+                userRoleName,
+                load_textView,
+                going_textView,
+                load_switch,
+                going_switch
+            )
         }
 
-        if(userRoleId == UserRoles.ID_TRADER) {
+        if (userRoleId == UserRoles.ID_TRADER) {
             menu.findItem(R.id.nav_GoingForLoad).isVisible = true
         } else {
             menu.findItem(R.id.nav_GoingForLoad).isVisible = false
         }
+    }
+
+    private fun getLoadData() {
+        var loggedPhoneNumber = SharedPreferencesManager.getLoginMobileNumber(this)
+        var loggedUserPIN = SharedPreferencesManager.getLoginPIN(this)
+        if (loggedUserPIN != null && loggedPhoneNumber != null) {
+            loginUser(loggedPhoneNumber, loggedUserPIN)
+        } else {
+            val intent = Intent(this, Login::class.java)
+            intent.flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the back stack
+            startActivity(intent)
+        }
+
     }
 
     fun setTextViewBasedOnRole(
@@ -251,30 +270,33 @@ class Dashboard : AppCompatActivity() {
     ) {
         when (role) {
             UserRoles.ROLE_FARMER -> {
-                    // For Farmer: If status is Batch Ready
-                    loadTextView.text = "Batch Ready"
-                    loadTextView.visibility = View.VISIBLE
-                    loadSwitch.visibility = View.VISIBLE
-                    goingTextView.visibility = View.GONE
-                    goingSwitch.visibility = View.GONE
+                // For Farmer: If status is Batch Ready
+                loadTextView.text = "Batch Ready"
+                loadTextView.visibility = View.VISIBLE
+                loadSwitch.visibility = View.VISIBLE
+                goingTextView.visibility = View.GONE
+                goingSwitch.visibility = View.GONE
             }
+
             UserRoles.ROLE_TRADER -> {
-                    // For Trader: If status is Need Load
-                    loadTextView.text = "Need Load"
-                    loadTextView.visibility = View.VISIBLE
-                    loadSwitch.visibility = View.VISIBLE
-                    goingTextView.visibility = View.VISIBLE
-                    goingSwitch.visibility = View.VISIBLE
+                // For Trader: If status is Need Load
+                loadTextView.text = "Need Load"
+                loadTextView.visibility = View.VISIBLE
+                loadSwitch.visibility = View.VISIBLE
+                goingTextView.visibility = View.VISIBLE
+                goingSwitch.visibility = View.VISIBLE
 
             }
+
             UserRoles.ROLE_SHOPKEEPER -> {
-                    // For Shopkeeper: If status is Need Load
-                    loadTextView.text = "Need Load"
-                    loadTextView.visibility = View.VISIBLE
-                    loadSwitch.visibility = View.VISIBLE
-                    goingTextView.visibility = View.GONE
-                    goingSwitch.visibility = View.GONE
+                // For Shopkeeper: If status is Need Load
+                loadTextView.text = "Need Load"
+                loadTextView.visibility = View.VISIBLE
+                loadSwitch.visibility = View.VISIBLE
+                goingTextView.visibility = View.GONE
+                goingSwitch.visibility = View.GONE
             }
+
             else -> {
                 // Default case for other roles
             }
@@ -313,7 +335,13 @@ class Dashboard : AppCompatActivity() {
         // Filter tabs based on user role
         val filteredTabs = when (userRole) {
             UserRoles.ROLE_FARMER -> availableTabs.filter { it.first == "Trader" }
-            UserRoles.ROLE_TRADER -> availableTabs.filter { it.first in listOf("Farmer", "Shopkeeper") }
+            UserRoles.ROLE_TRADER -> availableTabs.filter {
+                it.first in listOf(
+                    "Farmer",
+                    "Shopkeeper"
+                )
+            }
+
             UserRoles.ROLE_SHOPKEEPER -> availableTabs.filter { it.first == "Trader" }
             UserRoles.ROLE_ADMIN -> availableTabs // Admin sees all tabs
             else -> listOf() // Default case, no tabs
@@ -346,6 +374,7 @@ class Dashboard : AppCompatActivity() {
                 drawerLayout.closeDrawer(GravityCompat.START)
                 return
             }
+
             R.id.nav_BatchReady -> BatchReadyFragment()
             R.id.nav_GoingForLoad -> GoingForLoadFragment()
             R.id.nav_NeedEmployee -> NeedEmployee()
@@ -356,13 +385,15 @@ class Dashboard : AppCompatActivity() {
             R.id.nav_EggRates -> EggRatesFragment()
             R.id.nav_Logout -> {
                 val intent = Intent(this, Login::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the back stack
+                intent.flags =
+                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the back stack
                 SharedPreferencesManager.clearSignedIn(this)
                 SharedPreferencesManager.clearUserRole(this)
                 SharedPreferencesManager.clearRoleId(this)
                 startActivity(intent)
                 return
             }
+
             else -> return // Handle other cases if necessary
         }
 
@@ -401,14 +432,14 @@ class Dashboard : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(toggle.onOptionsItemSelected(item)){
+        if (toggle.onOptionsItemSelected(item)) {
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {
-        if(shouldAllowBack()) {
+        if (shouldAllowBack()) {
             super.onBackPressed()
         }
         // Do nothing or show a toast if needed
@@ -419,6 +450,97 @@ class Dashboard : AppCompatActivity() {
     private fun shouldAllowBack(): Boolean {
         // Replace with your condition
         return false
+    }
+
+    fun loginUser(mobile: String, pin: String) {
+        loader = LoaderUtils(this)
+
+        loader.show()
+        loginCalled = true
+
+        val loginRequest = LoginRequest(
+            mobileNumber = mobile,
+            pin = pin
+        )
+        val call = ApiClient.retrofit
+            .create(ApiService::class.java)
+            .loginUser(loginRequest)
+
+        ApiHelper.post(
+            endpointCall = call,
+            onSuccess = { response ->
+                SharedPreferencesManager.saveLoginPIN(this, pin)
+                SharedPreferencesManager.saveLoginMobileNUmber(this, mobile)
+
+                if (response.isSuccess) {
+                    val userDetails = response.item.userID  // This gets the UserDetails object
+                    val userPropertId =
+                        response.item.properties[0].propertyID  // This gets the UserDetails object
+                    val roleIDfromLogin = response.item.roleID  // This gets the UserDetails object
+                    val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime
+                    val needLoadUpdatedDateTime = response.item.needLoadUpdatedDateTime
+                    val goingForLoadUpdatedTime = response.item.goingForLoadUpdatedDateTime
+                    val batchReadyBool = response.item.batchReady
+                    val needLoadBool = response.item.needLoad
+                    val goingForLoad = response.item.goingForLoad
+
+//                    if (userPropertList.isNotEmpty()) {
+//                        val firstPropertyId = userPropertList[0].propertyID
+//                        SharedPreferencesManager.savePropertyID(this, firstPropertyId)                    }
+//                    val userId = userDetails.userID
+//                    val roleId = userDetails.roleID
+//                    Log.d("Login", "User ID: $userId")
+
+                    //       intent.putExtra("getUserRequest", Gson().toJson(getUserListRequest))
+                    SharedPreferencesManager.saveUserID(this, userDetails)
+                    SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
+                    SharedPreferencesManager.savePropertyID(this, userPropertId)
+                    SharedPreferencesManager.saveSignedIn(this, true)
+                    if (batchReadyBool) {
+                        SharedPreferencesManager.saveLastSubmitTimeBatch(
+                            this,
+                            batchReadyUpdatedDateTime
+                        )
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, "0")
+                    }
+
+                    if (needLoadBool) {
+                        SharedPreferencesManager.saveLastSubmitTimeNeed(
+                            this,
+                            needLoadUpdatedDateTime
+                        )
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, "0")
+                    }
+
+                    if (goingForLoad) {
+                        SharedPreferencesManager.saveLastSubmitTimeGoing(
+                            this,
+                            goingForLoadUpdatedTime
+                        )
+                    } else {
+                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, "0")
+                    }
+                    loader.hide()
+                } else {
+                    loader.hide()
+
+                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onFailure = { error ->
+                loader.hide()
+                CustomAlertDialog(this)
+                    .setTitle("Login Failed!!")
+                    .setDescription(error)
+                    .showOkButton(true, "OK") {
+                        println("Login Alert Ok pressed: $error")
+                    }
+                    .showCancelButton(false)
+                    .show()
+            }
+        )
     }
 
 }

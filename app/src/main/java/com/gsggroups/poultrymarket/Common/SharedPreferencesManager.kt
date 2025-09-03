@@ -15,7 +15,11 @@ object SharedPreferencesManager {
     private const val KEY_SIGN_IN = "KEY_SIGN_IN"
     private const val KEY_RATES = "KEY_RATES"
     private const val KEY_TIME = "KEY_TIME"
+    private const val KEY_MOBILINUMBER_LOGIN = "KEY_MOBILENUMBER"
+    private const val KEY_PIN_LOGIN = "KEY_PIN"
     private const val LAST_SUBMIT_TIMESTAMP_BATCH = "last_submit_timestamp_BatchReady"
+    private const val KEY_HEN_COUNT = "hencount_BatchReady"
+    private const val KEY_HEN_SIZE = "hensize_BatchReady"
     private const val LAST_SUBMIT_TIMESTAMP_NEEDLOAD = "last_submit_timestamp_NeedLoad"
     private const val LAST_SUBMIT_TIMESTAMP_GOINGLOAD = "last_submit_timestamp_GoingForLoad"
 
@@ -26,6 +30,39 @@ object SharedPreferencesManager {
 
     fun getLastSubmitTimeBatch(context: Context): String? {
         return getPreferences(context).getString(LAST_SUBMIT_TIMESTAMP_BATCH, null)
+    }
+    fun saveLoginMobileNUmber(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_MOBILINUMBER_LOGIN, timestamp).apply()
+    }
+
+    fun getLoginMobileNumber(context: Context): String? {
+        return getPreferences(context).getString(KEY_MOBILINUMBER_LOGIN, null)
+    }
+    fun saveLoginPIN(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_PIN_LOGIN, timestamp).apply()
+    }
+
+    fun getLoginPIN(context: Context): String? {
+        return getPreferences(context).getString(KEY_PIN_LOGIN, null)
+    }
+    fun saveHenCountSubmit(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_HEN_COUNT, timestamp).apply()
+    }
+
+    fun getHenCountSubmit(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_COUNT, null)
+    }
+
+    fun saveHenSizeSubmit(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_HEN_SIZE, timestamp).apply()
+    }
+
+    fun getHenSizeSubmit(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_SIZE, null)
     }
 
     fun clearLastSubmitTimeBatch(context: Context) {
@@ -42,7 +79,7 @@ object SharedPreferencesManager {
     }
 
     fun clearLastSubmitTimeNeed(context: Context) {
-        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_NEEDLOAD).apply()
     }
 
     fun saveLastSubmitTimeGoing(context: Context, timestamp: String) {
@@ -55,7 +92,7 @@ object SharedPreferencesManager {
     }
 
     fun clearLastSubmitTimeGoing(context: Context) {
-        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_GOINGLOAD).apply()
     }
 
     private fun getPreferences(context: Context): SharedPreferences {

@@ -109,6 +109,7 @@ class Login : AppCompatActivity() {
 
     fun loginUser(mobile: String, pin: String) {
         loader.show()
+
         val loginRequest = LoginRequest(
             mobileNumber = mobile,
             pin = pin
@@ -120,6 +121,9 @@ class Login : AppCompatActivity() {
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
+                SharedPreferencesManager.saveLoginPIN(this,pin)
+                SharedPreferencesManager.saveLoginMobileNUmber(this,mobile)
+
                 if (response.isSuccess) {
                     val userDetails = response.item.userID  // This gets the UserDetails object
                     val userPropertId = response.item.properties[0].propertyID  // This gets the UserDetails object
