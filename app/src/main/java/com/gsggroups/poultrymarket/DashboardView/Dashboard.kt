@@ -584,35 +584,26 @@ class Dashboard : AppCompatActivity() {
     }
     private fun refreshSwitchStates() {
         if (userRoleId == UserRoles.ID_FARMER) {
-            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeBatch(this)
-            val hasValue = !lastSubmitTime.isNullOrEmpty() && lastSubmitTime != "0" && lastSubmitTime != "null"
-
-            load_switch.isChecked = hasValue
-            load_switch.isEnabled = !hasValue
+            val batchReady = SharedPreferencesManager.getBatchBoolean(this)
+            load_switch.isChecked = batchReady
+            load_switch.isEnabled = !batchReady
 
         } else if (userRoleId == UserRoles.ID_TRADER) {
-            val submitPending = SharedPreferencesManager.isSubmitPending(this)
+            val needLoad = SharedPreferencesManager.getNeedBoolean(this)
+            load_switch.isChecked = needLoad
+            load_switch.isEnabled = !needLoad
 
-            val lastSubmitTimeNeed = SharedPreferencesManager.getLastSubmitTimeNeed(this)
-            val hasNeed = !lastSubmitTimeNeed.isNullOrEmpty() && lastSubmitTimeNeed != "0" && lastSubmitTimeNeed != "null"
+            val goingForLoad = SharedPreferencesManager.getGoingBoolean(this)
+            going_switch.isChecked = goingForLoad
+            going_switch.isEnabled = !goingForLoad
 
-            load_switch.isChecked = hasNeed
-            load_switch.isEnabled = !hasNeed
-
-            val lastSubmitTimeGoing = SharedPreferencesManager.getLastSubmitTimeGoing(this)
-            val hasGoing = !lastSubmitTimeGoing.isNullOrEmpty() && lastSubmitTimeGoing != "0" && lastSubmitTimeGoing != "null"
-
-            going_switch.isChecked = hasGoing
-            going_switch.isEnabled = !hasGoing && !submitPending
         } else if (userRoleId == UserRoles.ID_SHOPKEEPER) {
-            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeNeed(this)
-            val hasValue = !lastSubmitTime.isNullOrEmpty() && lastSubmitTime != "0" && lastSubmitTime != "null"
-
-            load_switch.isChecked = hasValue
-            load_switch.isEnabled = !hasValue
+            val needLoad = SharedPreferencesManager.getNeedBoolean(this)
+            load_switch.isChecked = needLoad
+            load_switch.isEnabled = !needLoad
         }
 
-        // Update text colors too
+        // Update text colors
         load_textView.setTextColor(if (load_switch.isChecked) Color.parseColor("#006400") else Color.RED)
         going_textView.setTextColor(if (going_switch.isChecked) Color.parseColor("#006400") else Color.RED)
     }

@@ -218,14 +218,10 @@ class BatchReadyFragment : Fragment() {
 
         checkAndDisableButtonIfNeeded()
     }
-    private fun checkAndDisableButtonIfNeeded() {
+    /*private fun checkAndDisableButtonIfNeeded() {
         val ctx = requireContext()
 
-        val lastSubmit = when (roleId) {
-            UserRoles.ID_FARMER -> SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
-            UserRoles.ID_TRADER -> SharedPreferencesManager.getLastSubmitTimeNeed(ctx)
-            else -> SharedPreferencesManager.getLastSubmitTimeNeed(ctx)
-        }
+        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
 
         if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
             val formatter = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -236,14 +232,13 @@ class BatchReadyFragment : Fragment() {
             val maxDuration = java.time.Duration.ofHours(24)
 
             if (duration < maxDuration) {
-                // Already submitted → disable Submit
-                submitButton.isEnabled = false
-                submitButton.text = "Submitted (Wait 24 hrs)"
-                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+                val remaining = maxDuration.minus(duration)
+                val hours = remaining.toHours()
+                val minutes = remaining.toMinutes() % 60
 
-                // Show ActivateAll as enabled
-                ActivateAllButton.isEnabled = true
-                ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                submitButton.isEnabled = false
+                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
+                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
 
                 // ✅ Restore Dashboard switch state
                 (requireActivity() as? Dashboard)?.let { dash ->
@@ -254,23 +249,60 @@ class BatchReadyFragment : Fragment() {
                 }
 
             } else {
+                // expired → reset
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
                 submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
-                ActivateAllButton.isEnabled = false
-                ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-                SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
+                SharedPreferencesManager.clearLastSubmitTimeBatch(ctx)
             }
         } else {
+            // No saved submit → normal state
             submitButton.isEnabled = true
             submitButton.text = "Submit"
             submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-            ActivateAllButton.isEnabled = false
             ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
         }
+    }*/
+
+
+    private fun checkAndDisableButtonIfNeeded() {
+        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(requireContext())
+
+        if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
+            val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+            val lastTime = LocalDateTime.parse(lastSubmit, formatter)
+            val now = LocalDateTime.now()
+            val duration = Duration.between(lastTime, now)
+            val maxDuration = Duration.ofHours(24)
+
+            if (duration < maxDuration) {
+                val remaining = maxDuration.minus(duration)
+                val hours = remaining.toHours()
+                val minutes = remaining.toMinutes() % 60
+
+                submitButton.isEnabled = false
+                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
+                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                ActivateAllButton.isEnabled = true
+                ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
+//                sharedViewModel.setBatchReady(true)
+//                sharedViewModel.setNeedLoad(true)
+                return
+            }
+        }
+
+        // Default state
+        submitButton.isEnabled = true
+        submitButton.text = "Submit"
+        submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
+        ActivateAllButton.isEnabled = false
+        ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+//        sharedViewModel.setBatchReady(false)
     }
 
 

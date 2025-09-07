@@ -204,42 +204,28 @@ class GoingForLoadFragment : Fragment() {
             val maxDuration = java.time.Duration.ofHours(24)
 
             if (duration < maxDuration) {
-                // Already submitted → disable Submit
+                val remaining = maxDuration.minus(duration)
+                val hours = remaining.toHours()
+                val minutes = remaining.toMinutes() % 60
+
                 submitButton.isEnabled = false
-                submitButton.text = "Submitted (Wait 24 hrs)"
+                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
 
-                // Show ActivateAll as enabled
-                activateAllButton.isEnabled = true
-                activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-                // ✅ Restore Dashboard switch state
-                (requireActivity() as? Dashboard)?.let { dash ->
-                    dash.going_switch.isChecked = true
-                    dash.going_switch.isEnabled = false
-                    dash.going_textView.setTextColor(Color.parseColor("#006400"))
-                    dash.going_textView.setTypeface(null, Typeface.BOLD)
-                }
-
             } else {
-                // Expired → reset
+                // expired → reset
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
                 submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
-                activateAllButton.isEnabled = false
-                activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-                SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
-            }
+                SharedPreferencesManager.clearLastSubmitTimeGoing(ctx) }
         } else {
-            // No saved submit → fresh state
+            // No saved submit → normal state
             submitButton.isEnabled = true
             submitButton.text = "Submit"
             submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-            activateAllButton.isEnabled = false
             activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
         }
     }
 
@@ -394,13 +380,7 @@ class GoingForLoadFragment : Fragment() {
                             UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeGoing(ctx, DateTimeUtils.formattedDateTime)
                             else -> SharedPreferencesManager.saveLastSubmitTimeGoing(ctx, DateTimeUtils.formattedDateTime)
                         }
-                        // ✅ Also update Dashboard switch & label instantly
-                        (requireActivity() as? Dashboard)?.let { dash ->
-                            dash.going_switch.isChecked = true
-                            dash.going_switch.isEnabled = false
-                            dash.going_textView.setTextColor(Color.parseColor("#006400"))
-                            dash.going_textView.setTypeface(null, Typeface.BOLD)
-                        }
+
                     } else {
                         // ActivateAll clicked
                         activateAllButton.isEnabled = false

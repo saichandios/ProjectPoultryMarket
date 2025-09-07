@@ -28,6 +28,9 @@ object SharedPreferencesManager {
     private const val LAST_SUBMIT_TIMESTAMP_NEEDLOAD = "last_submit_timestamp_NeedLoad"
     private const val LAST_SUBMIT_TIMESTAMP_GOINGLOAD = "last_submit_timestamp_GoingForLoad"
     private const val KEY_SUBMIT_PENDING = "KEY_SUBMIT_PENDING"
+    private const val KEY_LOGIN_BATCH= "KEY_LOGIN_BOOL"
+    private const val KEY_LOGIN_NEED= "KEY_LOGIN_BOOL"
+    private const val KEY_LOGIN_GOING= "KEY_LOGIN_GOING"
 
     fun saveLastSubmitTimeBatch(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
@@ -109,14 +112,29 @@ object SharedPreferencesManager {
         return getPreferences(context).getString(KEY_HEN_SIZE_GOING, null)
     }
 
-    // Save state when trader submits but not completed
-    fun saveSubmitPending(context: Context, pending: Boolean) {
-        getPreferences(context).edit().putBoolean(KEY_SUBMIT_PENDING, pending).apply()
+    fun saveBatchBoolean(context: Context, pending: Boolean) {
+        getPreferences(context).edit().putBoolean(KEY_LOGIN_BATCH, pending).apply()
     }
 
     // Read state
-    fun isSubmitPending(context: Context): Boolean {
-        return getPreferences(context).getBoolean(KEY_SUBMIT_PENDING, false)
+    fun getBatchBoolean(context: Context): Boolean {
+        return getPreferences(context).getBoolean(KEY_LOGIN_BATCH, false)
+    }
+    fun saveNeedBoolean(context: Context, pending: Boolean) {
+        getPreferences(context).edit().putBoolean(KEY_LOGIN_NEED, pending).apply()
+    }
+
+    // Read state
+    fun getNeedBoolean(context: Context): Boolean {
+        return getPreferences(context).getBoolean(KEY_LOGIN_NEED, false)
+    }
+    fun saveGoingBoolean(context: Context, pending: Boolean) {
+        getPreferences(context).edit().putBoolean(KEY_LOGIN_GOING, pending).apply()
+    }
+
+    // Read state
+    fun getGoingBoolean(context: Context): Boolean {
+        return getPreferences(context).getBoolean(KEY_LOGIN_GOING, false)
     }
 
 
