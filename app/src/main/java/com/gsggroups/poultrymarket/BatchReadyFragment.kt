@@ -112,7 +112,7 @@ class BatchReadyFragment : Fragment() {
                 loadAvilableText.setTypeface(null, Typeface.NORMAL)
             }
         }
-
+        checkAndDisableButtonIfNeeded()
         val userId = SharedPreferencesManager.getUserId(requireContext())
         val propertyId = SharedPreferencesManager.getPropertyId(requireContext())
         roleId = SharedPreferencesManager.getRoleId(requireContext())?.toInt() ?: 936
@@ -266,48 +266,10 @@ class BatchReadyFragment : Fragment() {
     }*/
 
 
-    private fun checkAndDisableButtonIfNeeded() {
-        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(requireContext())
-
-        if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
-            val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-            val lastTime = LocalDateTime.parse(lastSubmit, formatter)
-            val now = LocalDateTime.now()
-            val duration = Duration.between(lastTime, now)
-            val maxDuration = Duration.ofHours(24)
-
-            if (duration < maxDuration) {
-                val remaining = maxDuration.minus(duration)
-                val hours = remaining.toHours()
-                val minutes = remaining.toMinutes() % 60
-
-                submitButton.isEnabled = false
-                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
-                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-                ActivateAllButton.isEnabled = true
-                ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-//                sharedViewModel.setBatchReady(true)
-//                sharedViewModel.setNeedLoad(true)
-                return
-            }
-        }
-
-        // Default state
-        submitButton.isEnabled = true
-        submitButton.text = "Submit"
-        submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-        ActivateAllButton.isEnabled = false
-        ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-//        sharedViewModel.setBatchReady(false)
-    }
 
 
-    /*
-        private fun checkAndDisableButtonIfNeeded(isfromSubmit: Boolean) {
+
+        private fun checkAndDisableButtonIfNeeded() {
             var lastSubmit = ""
             if (roleId == UserRoles.ID_FARMER) {
                 lastSubmit =
@@ -335,6 +297,8 @@ class BatchReadyFragment : Fragment() {
                         UserRoles.ID_FARMER -> sharedViewModel.setBatchReady(true)
                         UserRoles.ID_TRADER -> sharedViewModel.setNeedLoad(true)
                     }
+                    ActivateAllButton.isEnabled=true
+                    ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
                 } else {
                     submitButton.isEnabled = true
@@ -355,6 +319,9 @@ class BatchReadyFragment : Fragment() {
                     }
 
                 }
+                ActivateAllButton.isEnabled = false
+                ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
             } else {
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
@@ -363,7 +330,6 @@ class BatchReadyFragment : Fragment() {
                 ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
             }
         }
-    */
 
     fun formatIndianCurrency(editText: EditText) {
         editText.addTextChangedListener(object : TextWatcher {

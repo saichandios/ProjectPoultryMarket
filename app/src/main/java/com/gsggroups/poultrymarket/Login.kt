@@ -147,19 +147,19 @@ class Login : AppCompatActivity() {
                     SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
                     SharedPreferencesManager.savePropertyID(this, userPropertId)
                     SharedPreferencesManager.saveSignedIn(this, true)
-                    if (batchReadyBool&&!batchReadyUpdatedDateTime.isNullOrEmpty()) {
+                    if (batchReadyBool) {
                         SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
                     } else {
                         SharedPreferencesManager.saveBatchBoolean(this, false)
                     }
 
-                    if (needLoadBool && !needLoadUpdatedDateTime.isNullOrEmpty()) {
+                    if (needLoadBool) {
                         SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
                     } else {
                         SharedPreferencesManager.saveNeedBoolean(this, false)
                     }
 
-                    if (goingForLoad&&!goingForLoadUpdatedTime.isNullOrEmpty()) {
+                    if (goingForLoad) {
                         SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
                     } else {
                         SharedPreferencesManager.saveGoingBoolean(this,false)
