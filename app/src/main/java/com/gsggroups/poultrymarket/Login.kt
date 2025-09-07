@@ -148,21 +148,21 @@ class Login : AppCompatActivity() {
                     SharedPreferencesManager.savePropertyID(this, userPropertId)
                     SharedPreferencesManager.saveSignedIn(this, true)
                     if (batchReadyBool&&!batchReadyUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
+                        SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
                     } else {
-                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, "0")
+                        SharedPreferencesManager.saveBatchBoolean(this, false)
                     }
 
                     if (needLoadBool && !needLoadUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
+                        SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
                     } else {
-                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, "0")
+                        SharedPreferencesManager.saveNeedBoolean(this, false)
                     }
 
                     if (goingForLoad&&!goingForLoadUpdatedTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, goingForLoadUpdatedTime)
+                        SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
                     } else {
-                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, "0")
+                        SharedPreferencesManager.saveGoingBoolean(this,false)
                     }
 
                     startActivity(Intent(this, Dashboard::class.java))
