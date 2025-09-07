@@ -7,6 +7,7 @@ import com.gsggroups.poultrymarket.Model.UserItem
 
 object SharedPreferencesManager {
 
+
     private const val PREFS_NAME = "UserPreferences"
     private const val KEY_USER_ROLE = "user_role"
     private const val KEY_USER_ID = "user_id"
@@ -19,9 +20,14 @@ object SharedPreferencesManager {
     private const val KEY_PIN_LOGIN = "KEY_PIN"
     private const val LAST_SUBMIT_TIMESTAMP_BATCH = "last_submit_timestamp_BatchReady"
     private const val KEY_HEN_COUNT = "hencount_BatchReady"
-    private const val KEY_HEN_SIZE = "hensize_BatchReady"
+    private const val KEY_HEN_COUNT_NEED="hencount_NeedLoad"
+    private const val KEY_HEN_COUNT_GOING="hencount_GoingForLoad"
+    private const val KEY_HEN_SIZE_BATCH = "hensize_BatchReady"
+    private const val KEY_HEN_SIZE_NEED = "hensize_NeedLoad"
+    private const val KEY_HEN_SIZE_GOING = "hensize_GoingForLoad"
     private const val LAST_SUBMIT_TIMESTAMP_NEEDLOAD = "last_submit_timestamp_NeedLoad"
     private const val LAST_SUBMIT_TIMESTAMP_GOINGLOAD = "last_submit_timestamp_GoingForLoad"
+    private const val KEY_SUBMIT_PENDING = "KEY_SUBMIT_PENDING"
 
     fun saveLastSubmitTimeBatch(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
@@ -55,15 +61,64 @@ object SharedPreferencesManager {
     fun getHenCountSubmit(context: Context): String? {
         return getPreferences(context).getString(KEY_HEN_COUNT, null)
     }
-
-    fun saveHenSizeSubmit(context: Context, timestamp: String) {
+    fun saveHenCountSubmitNeed(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
-        prefs.edit().putString(KEY_HEN_SIZE, timestamp).apply()
+        prefs.edit().putString(KEY_HEN_COUNT_NEED, timestamp).apply()
     }
 
-    fun getHenSizeSubmit(context: Context): String? {
-        return getPreferences(context).getString(KEY_HEN_SIZE, null)
+    fun getHenCountSubmitNeed(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_COUNT_NEED, null)
     }
+
+    fun saveHenCountSubmitGoing(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_HEN_COUNT_GOING, timestamp).apply()
+    }
+
+    fun getHenCountSubmitGoing(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_COUNT_GOING, null)
+    }
+
+    fun saveHenSizeSubmitNeed(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_HEN_SIZE_NEED, timestamp).apply()
+    }
+    fun clearLastSubmitHensize(context: Context) {
+        getPreferences(context).edit().remove(KEY_HEN_SIZE_BATCH).apply()
+    }
+    fun clearLastSubmitHencount(context: Context) {
+        getPreferences(context).edit().remove(KEY_HEN_COUNT_NEED).apply()
+    }
+    fun getHenSizeSubmitBatch(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_SIZE_NEED, null)
+    }
+    fun saveHenSizeSubmitBatch(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_HEN_SIZE_BATCH, timestamp).apply()
+    }
+
+    fun getHenSizeSubmitNeed(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_SIZE_BATCH, null)
+    }
+  fun saveHenSizeSubmitGoing(context: Context, timestamp: String) {
+        val prefs = getPreferences(context)
+        prefs.edit().putString(KEY_HEN_SIZE_GOING, timestamp).apply()
+    }
+
+    fun getHenSizeSubmitGoing(context: Context): String? {
+        return getPreferences(context).getString(KEY_HEN_SIZE_GOING, null)
+    }
+
+    // Save state when trader submits but not completed
+    fun saveSubmitPending(context: Context, pending: Boolean) {
+        getPreferences(context).edit().putBoolean(KEY_SUBMIT_PENDING, pending).apply()
+    }
+
+    // Read state
+    fun isSubmitPending(context: Context): Boolean {
+        return getPreferences(context).getBoolean(KEY_SUBMIT_PENDING, false)
+    }
+
 
     fun clearLastSubmitTimeBatch(context: Context) {
         getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()

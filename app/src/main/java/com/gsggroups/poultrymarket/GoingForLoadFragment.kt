@@ -17,11 +17,13 @@ import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
+import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.SubmitLoadRequest
 import com.gsggroups.poultrymarket.SharedDataFiles.SharedViewModel
 import com.gsggroups.poultrymarket.Utils.ApiService
@@ -51,11 +53,11 @@ class GoingForLoadFragment : Fragment() {
     private lateinit var activateAllButton: Button
     private lateinit var loader: LoaderUtils
     var roleId: Int = 936
-    private lateinit var sharedViewModel: SharedViewModel
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private val sharedViewModel: SharedViewModel by activityViewModels() // 👈 important!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +91,6 @@ class GoingForLoadFragment : Fragment() {
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button)
         activateAllButton = view.findViewById(R.id.completed_activate_all_button)
-        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         // Set up a listener to change text color based on switch state
         load_available_switch.setOnCheckedChangeListener { _, isChecked ->
@@ -113,27 +114,33 @@ class GoingForLoadFragment : Fragment() {
         val editTextSalary = view.findViewById<EditText>(R.id.text_hen_count)
         formatIndianCurrency(editTextSalary)
         activateAllButton.setOnClickListener {
-            val henSizeFromShared = SharedPreferencesManager.getHenSizeSubmit(requireContext())
-            val henCountFromShared = SharedPreferencesManager.getHenCountSubmit(requireContext())
+            val henSizeFromShared = SharedPreferencesManager.getHenSizeSubmitGoing(requireContext())
+            val henCountFromShared = SharedPreferencesManager.getHenCountSubmitGoing(requireContext())
             // Submit after all validations passed
             if (propertyId != null) {
                 if (userId != null) {
-                    if (henSizeFromShared != null) {
-                        henCountFromShared?.let { it1 ->
-                            submitLoadRequest(
-                                userId,
-                                propertyId,
-                                loadDescription,
-                                henCountFromShared,
-                                henSizeFromShared,
-                                isActivate = false,
-                                isFromSubmit = false
-
-                            )
-                            sharedViewModel.setGoingForLoad(false) // Turn switch ON
-
-                        }
+                    if (henSizeFromShared != null && henCountFromShared != null) {
+                        submitLoadRequest(
+                            userId,
+                            propertyId,
+                            loadDescription,
+                            henCountFromShared,
+                            henSizeFromShared,
+                            isActivate = false,
+                            isFromSubmit = false
+                        )
+                    } else {
+                        submitLoadRequest(
+                            userId,
+                            propertyId,
+                            loadDescription,
+                            "1",   // default henCount
+                            "1",   // default henSize
+                            isActivate = false,
+                            isFromSubmit = false
+                        )
                     }
+
                 }
             }
 
@@ -160,7 +167,10 @@ class GoingForLoadFragment : Fragment() {
                 Toast.makeText(requireContext(), "User or Property ID missing", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
+            SharedPreferencesManager.saveLastSubmitTimeGoing(
+                requireContext(),
+                DateTimeUtils.formattedDateTime
+            )
             // Submit after all validations passed
             submitLoadRequest(
                 userId,
@@ -171,15 +181,79 @@ class GoingForLoadFragment : Fragment() {
                 true,
                 true
             )
-            sharedViewModel.setGoingForLoad(true)
 
         }
 
         checkAndDisableButtonIfNeeded()
     }
-
     private fun checkAndDisableButtonIfNeeded() {
-        var lastSubmit = SharedPreferencesManager.getLastSubmitTimeGoing(requireContext()).toString()
+        val ctx = requireContext()
+
+        val lastSubmit = when (roleId) {
+            UserRoles.ID_FARMER -> SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+            UserRoles.ID_TRADER -> SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
+            else -> SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
+        }
+
+        if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
+            val formatter = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
+            val lastTime = java.time.LocalDateTime.parse(lastSubmit, formatter)
+            val now = java.time.LocalDateTime.now()
+
+            val duration = java.time.Duration.between(lastTime, now)
+            val maxDuration = java.time.Duration.ofHours(24)
+
+            if (duration < maxDuration) {
+                // Already submitted → disable Submit
+                submitButton.isEnabled = false
+                submitButton.text = "Submitted (Wait 24 hrs)"
+                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                // Show ActivateAll as enabled
+                activateAllButton.isEnabled = true
+                activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
+                // ✅ Restore Dashboard switch state
+                (requireActivity() as? Dashboard)?.let { dash ->
+                    dash.going_switch.isChecked = true
+                    dash.going_switch.isEnabled = false
+                    dash.going_textView.setTextColor(Color.parseColor("#006400"))
+                    dash.going_textView.setTypeface(null, Typeface.BOLD)
+                }
+
+            } else {
+                // Expired → reset
+                submitButton.isEnabled = true
+                submitButton.text = "Submit"
+                submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
+                activateAllButton.isEnabled = false
+                activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
+            }
+        } else {
+            // No saved submit → fresh state
+            submitButton.isEnabled = true
+            submitButton.text = "Submit"
+            submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
+            activateAllButton.isEnabled = false
+            activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+        }
+    }
+
+/*
+    private fun checkAndDisableButtonIfNeeded() {
+        val ctx = requireContext()
+
+        // Pick correct SharedPref key based on role
+        val lastSubmit = when (roleId) {
+            UserRoles.ID_FARMER -> SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+            UserRoles.ID_TRADER -> SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
+            else -> SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
+        }
+
         if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
             val formatter = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
             val lastTime = java.time.LocalDateTime.parse(lastSubmit, formatter)
@@ -203,16 +277,22 @@ class GoingForLoadFragment : Fragment() {
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
                 submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-                SharedPreferencesManager.clearLastSubmitTimeGoing(requireContext())
+
+                // clear the correct pref when expired
+                when (roleId) {
+                    UserRoles.ID_TRADER -> SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
+                    else -> SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
+                }
             }
         } else {
+            // No saved submit → normal state
             submitButton.isEnabled = true
             submitButton.text = "Submit"
             submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
             activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
         }
-
     }
+*/
 
     fun formatIndianCurrency(editText: EditText) {
         editText.addTextChangedListener(object : TextWatcher {
@@ -260,17 +340,17 @@ class GoingForLoadFragment : Fragment() {
         userId: String,
         propertyId: String,
         loadDescription: String,
-        henCountFromShared: String,
-        henSizeFromShared: String,
+        henCount: String,
+        henSize: String,
         isActivate: Boolean,
         isFromSubmit: Boolean
     ) {
-        loader.show()
-        val henCount = henCountEditText.text.toString()
+  //      loader.show()
+        val henCount = henCount
             .replace(",", "")
             .trim()
             .toIntOrNull() ?: 0
-        val selectedHenSize = henSizeSpinner.selectedItem?.toString() ?: "0 kg"
+        val selectedHenSize = henSize?.toString() ?: "0 kg"
         val henSizeFloat = selectedHenSize
             .replace("kg", "", ignoreCase = true)
             .trim()
@@ -293,14 +373,14 @@ class GoingForLoadFragment : Fragment() {
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
-                val ctx = activity?.applicationContext  // safer than requireContext()
+                val ctx = activity?.applicationContext ?: return@post
 
                 if (response.isSuccess) {
                     ctx?.let {
                         Toast.makeText(it, response.message, Toast.LENGTH_LONG).show()
                     }
                     if (isFromSubmit) {
-                        // 🔹 Submit clicked: disable submit, enable ActivateAll
+                        // Submit clicked
                         submitButton.isEnabled = false
                         submitButton.text = "Submitted (Wait 24 hrs)"
                         submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
@@ -308,53 +388,50 @@ class GoingForLoadFragment : Fragment() {
                         activateAllButton.isEnabled = true
                         activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
-                        // Save last submit time
+                        // ✅ Save pref + update sharedViewModel
                         when (roleId) {
-                            UserRoles.ID_FARMER -> SharedPreferencesManager.saveLastSubmitTimeBatch(
-                                requireContext(),
-                                DateTimeUtils.formattedDateTime
-                            )
-
-                            UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeNeed(
-                                requireContext(),
-                                DateTimeUtils.formattedDateTime
-                            )
-
-                            else -> SharedPreferencesManager.saveLastSubmitTimeGoing(
-                                requireContext(),
-                                DateTimeUtils.formattedDateTime
-                            )
+                            UserRoles.ID_FARMER -> SharedPreferencesManager.saveLastSubmitTimeBatch(ctx, DateTimeUtils.formattedDateTime)
+                            UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeGoing(ctx, DateTimeUtils.formattedDateTime)
+                            else -> SharedPreferencesManager.saveLastSubmitTimeGoing(ctx, DateTimeUtils.formattedDateTime)
+                        }
+                        // ✅ Also update Dashboard switch & label instantly
+                        (requireActivity() as? Dashboard)?.let { dash ->
+                            dash.going_switch.isChecked = true
+                            dash.going_switch.isEnabled = false
+                            dash.going_textView.setTextColor(Color.parseColor("#006400"))
+                            dash.going_textView.setTypeface(null, Typeface.BOLD)
                         }
                     } else {
-                        // 🔹 ActivateAll clicked: disable ActivateAll, enable Submit
+                        // ActivateAll clicked
                         activateAllButton.isEnabled = false
                         activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
 
                         submitButton.isEnabled = true
                         submitButton.text = "Submit"
                         submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-                        SharedPreferencesManager.clearLastSubmitTimeGoing(requireContext())
-                        sharedViewModel.setGoingForLoad(false) // dashboard switch red
 
+                        SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
+
+                        // ✅ Update sharedViewModel so Dashboard switch → OFF
+                        sharedViewModel.setGoingForLoad(false)
                     }
-
                     // reset input fields
                     henCountEditText.text.clear()
                     henSizeSpinner.setSelection(0)
                 } else {
                     Log.e("SubmitLoad", "Failed: ${response.message}")
                     Toast.makeText(
-                        requireContext(),
+                        ctx,
                         "Submit failed: ${response.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                loader.hide()
+               // loader.hide()
             },
             onFailure = { error ->
                 Log.e("SubmitLoad", "Error: $error")
                 Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-                loader.hide()
+            //    loader.hide()
             }
         )
     }
@@ -365,6 +442,7 @@ class GoingForLoadFragment : Fragment() {
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.
          *
+         * @param param1 Parameter 1.
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
          * @return A new instance of fragment GoingForLoadFragment.

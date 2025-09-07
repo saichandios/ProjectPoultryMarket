@@ -43,5 +43,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="arrow_icon">Arrow icon</string>
+    <string name="edit_name">Edit Name</string>
+    <string name="edit_mobile">Edit Mobile number</string>
+    <string name="edit_pin">Edit PIN</string>
+    <string name="edit_farm_name">Edit FormName</string>
+    <string name="address1">Edit Address1</string>
+    <string name="address2">Address</string>
+    <string name="profile">Edit Profile</string>
 
 </resources>

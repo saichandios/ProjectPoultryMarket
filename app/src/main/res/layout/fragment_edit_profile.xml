@@ -12,9 +12,10 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,6 +24,7 @@
             android:orientation="vertical"
             android:padding="10dp">
 
+            <!-- Title -->
             <TextView
                 android:id="@+id/registration_text"
                 android:layout_width="wrap_content"
@@ -30,77 +32,54 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="10dp"
-                android:text="Profile"
+                android:text="@string/profile"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <!-- TextField for Name -->
-            <LinearLayout
+            <!-- Name -->
+            <EditText
+                android:id="@+id/textfield_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableStart="@android:drawable/ic_menu_gallery"
+                android:hint="@string/edit_name"
+                android:padding="8dp" />
+
+            <!-- Mobile -->
+            <EditText
+                android:id="@+id/textfield_mobile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:drawableStart="@android:drawable/ic_menu_gallery"
+                android:hint="@string/edit_mobile"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:padding="8dp" />
 
-                <EditText
-                    android:id="@+id/textfield_name"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableLeft="@android:drawable/ic_menu_gallery"
-                    android:hint="Edit Name" />
-            </LinearLayout>
-
-            <!-- TextField for Mobile -->
-            <LinearLayout
+            <!-- Pin -->
+            <EditText
+                android:id="@+id/textfield_pin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:drawableStart="@android:drawable/ic_menu_gallery"
+                android:hint="@string/edit_pin"
+                android:inputType="numberPassword"
+                android:maxLength="4"
+                android:padding="8dp" />
 
-                <EditText
-                    android:id="@+id/textfield_mobile"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableLeft="@android:drawable/ic_menu_gallery"
-                    android:hint="Edit Mobile"
-                    android:maxLength="10"/>
-            </LinearLayout>
-
-            <!-- TextField for Pin -->
-            <LinearLayout
+            <!-- Farm -->
+            <EditText
+                android:id="@+id/textfield_farm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:drawableStart="@android:drawable/ic_menu_gallery"
+                android:hint="@string/edit_farm_name"
+                android:padding="8dp" />
 
-                <EditText
-                    android:id="@+id/textfield_pin"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableLeft="@android:drawable/ic_menu_gallery"
-                    android:hint="Edit 4 digit Pin"
-                    android:inputType="numberPassword" />
-            </LinearLayout>
-
-            <!-- TextField for Farm Name -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <EditText
-                    android:id="@+id/textfield_farm"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableLeft="@android:drawable/ic_menu_gallery"
-                    android:hint="Edit Farm Name" />
-            </LinearLayout>
-
-            <!-- Dropdown for State -->
+            <!-- State Spinner -->
             <Spinner
                 android:id="@+id/spinner_state"
                 android:layout_width="match_parent"
@@ -109,7 +88,7 @@
                 android:background="@drawable/border_spinner"
                 android:entries="@array/states" />
 
-            <!-- Dropdown for District -->
+            <!-- District Spinner -->
             <Spinner
                 android:id="@+id/spinner_district"
                 android:layout_width="match_parent"
@@ -118,74 +97,70 @@
                 android:background="@drawable/border_spinner"
                 android:entries="@array/districts" />
 
-            <!-- TextField for Address 1 -->
-            <LinearLayout
+            <!-- Address 1 -->
+            <EditText
+                android:id="@+id/textfield_address1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:drawableStart="@android:drawable/ic_menu_info_details"
+                android:hint="@string/address1"
+                android:padding="8dp" />
 
-                <EditText
-                    android:id="@+id/textfield_address1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:drawableLeft="@android:drawable/ic_menu_info_details"
-                    android:hint="Enter Address 1" />
-            </LinearLayout>
-
-            <!-- Multiline TextField for Address -->
-            <LinearLayout
+            <!-- Address 2 with GPS icon -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="vertical">
+                android:layout_marginTop="8dp">
 
                 <EditText
                     android:id="@+id/textfield_address2"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/border_edittext"
-                    android:enabled="false"
+                    android:focusable="false"
                     android:gravity="top"
-                    android:hint="Enter Address 2"
+                    android:hint="@string/address2"
                     android:inputType="textMultiLine"
-                    android:lines="4" />
+                    android:lines="4"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageView
                     android:id="@+id/icon_gps"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end|top"
-                    android:layout_marginTop="-45dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@android:drawable/ic_menu_add" />
-            </LinearLayout>
+                    android:layout_margin="8dp"
+                    android:src="@android:drawable/ic_menu_mylocation"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/textfield_address2" />
 
-            <!-- Container for dynamically added farm fields -->
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Dynamic farm container -->
             <LinearLayout
                 android:id="@+id/farm_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="10dp">
-            </LinearLayout>
+                android:layout_marginTop="10dp" />
 
-
-            <!-- Add Farm Link Button -->
+            <!-- Add Farm -->
             <TextView
                 android:id="@+id/link_add_farm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
+                android:layout_gravity="end"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
                 android:text="@string/add_farm"
                 android:textColor="#0037FF"
                 android:textStyle="bold"
-                android:textSize="25sp"
+                android:textSize="18sp"
                 android:clickable="true" />
 
+            <!-- Submit -->
             <Button
                 android:id="@+id/button_profile_submit"
                 android:layout_width="match_parent"
