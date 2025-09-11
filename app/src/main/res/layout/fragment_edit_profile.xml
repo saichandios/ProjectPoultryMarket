@@ -158,6 +158,7 @@
                 android:textColor="#0037FF"
                 android:textStyle="bold"
                 android:textSize="18sp"
+                android:visibility="gone"
                 android:clickable="true" />
 
             <!-- Submit -->

@@ -67,6 +67,8 @@
             android:layout_height="wrap_content"
             android:hint="Enter count"
             android:inputType="number"
+            android:imeOptions="actionDone"
+            android:singleLine="true"
             android:background="@android:drawable/edit_text"
             android:padding="8dp"/>
 
@@ -128,7 +130,7 @@
 
     <!-- Submit Button -->
     <Button
-        android:id="@+id/submit_button"
+        android:id="@+id/submit_button_batch_need"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Submit"
@@ -137,7 +139,7 @@
         android:textColor="#FFFFFF"/>
 
     <Button
-        android:id="@+id/completed_activate_all_button"
+        android:id="@+id/completed_activate_all_button_batch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Completed, Activate All"

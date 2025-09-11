@@ -27,9 +27,13 @@ import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.SubmitLoadRequest
 import com.gsggroups.poultrymarket.SharedDataFiles.SharedViewModel
 import com.gsggroups.poultrymarket.Utils.ApiService
+import com.gsggroups.poultrymarket.Utils.hideKeyboardAfterIdle
 import com.gsggroups.poultrymarket.base.ApiClient
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // TODO: Rename parameter arguments, choose names that match
@@ -43,6 +47,7 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class GoingForLoadFragment : Fragment() {
+    private var goingBool: Boolean = false
     private lateinit var loadAvilableText: TextView
     private lateinit var load_available_switch: Switch
     private lateinit var headingText: TextView
@@ -92,7 +97,6 @@ class GoingForLoadFragment : Fragment() {
         submitButton = view.findViewById(R.id.submit_button)
         activateAllButton = view.findViewById(R.id.completed_activate_all_button)
 
-        // Set up a listener to change text color based on switch state
         load_available_switch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 loadAvilableText.setTextColor(Color.parseColor("#006400"))
@@ -102,7 +106,7 @@ class GoingForLoadFragment : Fragment() {
                 loadAvilableText.setTypeface(null, Typeface.NORMAL)
             }
         }
-
+henCountEditText.hideKeyboardAfterIdle()
         val userId = SharedPreferencesManager.getUserId(requireContext())
         val propertyId = SharedPreferencesManager.getPropertyId(requireContext())
         var loadDescription = "Going for Load"
@@ -143,7 +147,6 @@ class GoingForLoadFragment : Fragment() {
 
                 }
             }
-
         }
 
         submitButton.setOnClickListener {
@@ -183,27 +186,37 @@ class GoingForLoadFragment : Fragment() {
             )
 
         }
+     checkAndDisableButtonGoingLoad()
 
-        checkAndDisableButtonIfNeeded()
     }
-    private fun checkAndDisableButtonIfNeeded() {
+    private fun checkAndDisableButtonGoingLoad() {
         val ctx = requireContext()
+        var lastSubmit: String? = null
+        var isSubmitted = false
 
-        val lastSubmit = when (roleId) {
-            UserRoles.ID_FARMER -> SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
-            UserRoles.ID_TRADER -> SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
-            else -> SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
+        // Pick correct pref based on role
+        when (roleId) {
+            UserRoles.ID_FARMER -> {
+                lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+                isSubmitted = sharedViewModel.batchReady.value ?: false
+            }
+
+            UserRoles.ID_TRADER, UserRoles.ID_SHOPKEEPER -> {
+                goingBool = SharedPreferencesManager.getGoingBoolean(ctx)
+                lastSubmit = SharedPreferencesManager.getLastSubmitTimeGoing(ctx)
+                isSubmitted = sharedViewModel.goingForLoad.value ?: false
+            }
         }
 
         if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
-            val formatter = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
-            val lastTime = java.time.LocalDateTime.parse(lastSubmit, formatter)
-            val now = java.time.LocalDateTime.now()
+            val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+            val lastTime = LocalDateTime.parse(lastSubmit, formatter)
+            val now = LocalDateTime.now()
+            val duration = Duration.between(lastTime, now)
+            val maxDuration = Duration.ofHours(24)
 
-            val duration = java.time.Duration.between(lastTime, now)
-            val maxDuration = java.time.Duration.ofHours(24)
-
-            if (duration < maxDuration) {
+            if (duration < maxDuration && isSubmitted) {
+                // Still inside cooldown
                 val remaining = maxDuration.minus(duration)
                 val hours = remaining.toHours()
                 val minutes = remaining.toMinutes() % 60
@@ -212,22 +225,35 @@ class GoingForLoadFragment : Fragment() {
                 submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
 
+                activateAllButton.isEnabled = true
+                activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                return
             } else {
-                // expired → reset
+                when (roleId) {
+                    UserRoles.ID_FARMER -> SharedPreferencesManager.clearLastSubmitTimeBatch(ctx)
+                    UserRoles.ID_TRADER, UserRoles.ID_SHOPKEEPER -> SharedPreferencesManager.clearLastSubmitTimeGoing(
+                        ctx
+                    )
+                }
+            }
+        }
+            if (goingBool) {
+                submitButton.isEnabled = false
+                submitButton.text = "Submit"
+                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+
+                activateAllButton.isEnabled = true
+                activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+            }else{
                 submitButton.isEnabled = true
                 submitButton.text = "Submit"
                 submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
-                SharedPreferencesManager.clearLastSubmitTimeGoing(ctx) }
-        } else {
-            // No saved submit → normal state
-            submitButton.isEnabled = true
-            submitButton.text = "Submit"
-            submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-            activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-        }
+                activateAllButton.isEnabled = false
+                activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+            }
     }
+
 
 /*
     private fun checkAndDisableButtonIfNeeded() {
@@ -374,12 +400,13 @@ class GoingForLoadFragment : Fragment() {
                         activateAllButton.isEnabled = true
                         activateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
-                        // ✅ Save pref + update sharedViewModel
                         when (roleId) {
                             UserRoles.ID_FARMER -> SharedPreferencesManager.saveLastSubmitTimeBatch(ctx, DateTimeUtils.formattedDateTime)
                             UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeGoing(ctx, DateTimeUtils.formattedDateTime)
                             else -> SharedPreferencesManager.saveLastSubmitTimeGoing(ctx, DateTimeUtils.formattedDateTime)
                         }
+                        sharedViewModel.setGoingForLoad(true)
+                        SharedPreferencesManager.saveGoingBoolean(ctx,true)
 
                     } else {
                         // ActivateAll clicked
@@ -391,8 +418,8 @@ class GoingForLoadFragment : Fragment() {
                         submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
 
                         SharedPreferencesManager.clearLastSubmitTimeGoing(ctx)
+                        SharedPreferencesManager.saveGoingBoolean(ctx,false)
 
-                        // ✅ Update sharedViewModel so Dashboard switch → OFF
                         sharedViewModel.setGoingForLoad(false)
                     }
                     // reset input fields
@@ -436,5 +463,13 @@ class GoingForLoadFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (SharedPreferencesManager.getGoingBoolean(requireContext()) == false) {
+            (requireActivity() as? Dashboard)?.updateGoingForLoadSwitch(null, false)
+//            sharedViewModel.setGoingForLoad(false)
+        }
     }
 }

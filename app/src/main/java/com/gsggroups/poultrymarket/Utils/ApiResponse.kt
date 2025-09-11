@@ -5,6 +5,12 @@ data class ApiResponse<T>(
     val item: T,
     val statusCode: Int? = null,
 )
+data class ApiResponseNew<T>(
+    val isSuccess: Boolean,
+    val message: String,
+    val newItem: T,
+    val statusCode: Int? = null,
+)
 
 
 data class UserItem(

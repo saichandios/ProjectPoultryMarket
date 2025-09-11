@@ -54,33 +54,48 @@ object DropDownManager {
     )
 
     // Get list of states
-    fun getStates(): List<String> = states
 
     // Get districts based on state
     fun getDistrictsForState(state: String): List<String> {
         return districtsByState[state] ?: emptyList()
     }
+    private var stateIdToName: Map<Int, String> = emptyMap()
 
+    // Get list of states (for spinner); prefer using stateIdToName values if available
+    fun getStates(): List<String> {
+        return if (stateIdToName.isNotEmpty()) {
+            // keep "All" first if you want
+            listOf("All") + stateIdToName.values.filter { it != "All" }.toList()
+        } else {
+            states
+        }
+    }
+
+    // Prefer ID->name map; fallback to index (legacy)
     fun getStateNameById(stateId: Int): String? {
-        return if (stateId in 1..states.size) {
-            states[stateId - 1] // IDs start at 1, but list index starts at 0
-        } else {
-            null
-        }
+        // Primary: lookup by explicit ID
+        stateIdToName[stateId]?.let { return it }
+
+        // Fallback: old index-based lookup (only if IDs really are 1..N)
+        return states.getOrNull(stateId - 1)
     }
 
+    // Get district name given stateId and districtId.
+    // We look up state name from ID (using new map or fallback), then find the district.
     fun getDistrictNameByIds(stateId: Int, districtId: Int): String? {
-        // First get state name from ID
-        val stateName = getStateNameById(stateId)
-
-        // Then get district list and district name from ID
-        val districts = stateName?.let { districtsByState[it] }
-        return if (districts != null && districtId in 1..districts.size) {
-            districts[districtId - 1] // ID starts at 1, list index at 0
-        } else {
-            null
-        }
+        val stateName = getStateNameById(stateId) ?: return null
+        val districts = districtsByState[stateName] ?: return null
+        return districts.getOrNull(districtId - 1)
     }
+
+    // Optional helper: find id by state name (useful for spinner selection)
+    fun getStateIdByName(name: String): Int? {
+        val entry = stateIdToName.entries.find { it.value.equals(name, true) }
+        if (entry != null) return entry.key
+        val idx = states.indexOfFirst { it.equals(name, true) }
+        return if (idx >= 0) idx + 1 else null
+    }
+
 
 }
 

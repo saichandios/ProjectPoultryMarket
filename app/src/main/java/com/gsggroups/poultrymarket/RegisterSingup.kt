@@ -29,6 +29,7 @@ import java.util.Locale
 import android.Manifest
 import android.content.IntentSender
 import android.location.LocationListener
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.LoaderUtils
@@ -291,6 +292,7 @@ class RegisterSingup: AppCompatActivity() {
 
                 // Get the districts for this state
                 val selectedState = states[position]
+                Log.d("RegisterSingup", "Selected State: $selectedState")
                 val districts = DropDownManager.getDistrictsForState(selectedState)
 
                 // Set up district adapter
@@ -314,7 +316,9 @@ class RegisterSingup: AppCompatActivity() {
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 // Store district position
-                selectedDistrictPosition = position
+                selectedDistrictPosition = position+1
+                Log.d("RegisterSingup", "Selected dist: $selectedStatePosition")
+
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -543,35 +547,39 @@ class RegisterSingup: AppCompatActivity() {
 
             val call = ApiClient.retrofit.create(ApiService::class.java).registerUser(userRequest)
 
-            ApiHelper.post(endpointCall = call, onSuccess = { response ->
+            ApiHelper.postNew(endpointCall = call, onSuccess = { response ->
                 if (response.isSuccess) {
-                    val user = response.item
+                    val user = response.newItem
                     println("User Registered: ${user}")
-                    startActivity(intent)
-                    loader.hide()
-                    SharedPreferencesManager.saveSignedIn(this, true)
+                 //   loader.hide()
 
-                    val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime
-                    val needLoadUpdatedDateTime = response.item.needLoadUpdatedDateTime
-                    val goingForLoadUpdatedTime = response.item.goingForLoadUpdatedDateTime
-                    val batchReadyBool = response.item.batchReady
-                    val needLoadBool = response.item.needLoad
-                    val goingForLoad = response.item.goingForLoad
+                    startActivity(intent)
+                    finish()
+                    SharedPreferencesManager.saveSignedIn(this, true)
+                    SharedPreferencesManager.saveLoginPIN(this, pin)
+                    SharedPreferencesManager.saveLoginMobileNUmber(this, mobile)
+
+//                    val batchReadyUpdatedDateTime = response.newItem.batchReadyUpdatedDateTime
+//                    val needLoadUpdatedDateTime = response.newItem.needLoadUpdatedDateTime
+//                    val goingForLoadUpdatedTime = response.newItem.goingForLoadUpdatedDateTime
+                    val batchReadyBool = response.newItem.batchReady
+                    val needLoadBool = response.newItem.needLoad
+                    val goingForLoad = response.newItem.goingForLoad
 
                     SharedPreferencesManager.saveUserID(this, user.userID)
                     SharedPreferencesManager.saveRoleID(this, user.roleID)
-                    SharedPreferencesManager.savePropertyID(this, user.properties[0].propertyID)
-                    if (batchReadyUpdatedDateTime != null && batchReadyBool) {
-                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
-                    } else {
-                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, "0")
-                    }
-
-                    if (needLoadUpdatedDateTime != null && needLoadBool) {
-                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
-                    } else {
-                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, "0")
-                    }
+//                    SharedPreferencesManager.savePropertyID(this, user.properties[0].propertyID)
+//                    if (batchReadyUpdatedDateTime != null && batchReadyBool) {
+//                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
+//                    } else {
+//                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, "0")
+//                    }
+//
+//                    if (needLoadUpdatedDateTime != null && needLoadBool) {
+//                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
+//                    } else {
+//                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, "0")
+//                    }
 
                 } else {
                     showCustomdailogResponseValues(this, response.message)

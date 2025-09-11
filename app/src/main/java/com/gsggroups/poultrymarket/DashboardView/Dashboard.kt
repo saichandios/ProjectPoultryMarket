@@ -249,6 +249,7 @@ class Dashboard : AppCompatActivity() {
                 load_textView.setTextColor(Color.parseColor("#006400"))
                 load_textView.setTypeface(null, Typeface.BOLD)
                 loadFragment(BatchReadyFragment())
+                load_switch.isEnabled=false
                 highlightMenuItem(R.id.nav_BatchReady)
             } else {
                 load_textView.setTextColor(Color.RED)
@@ -270,6 +271,7 @@ class Dashboard : AppCompatActivity() {
                 going_textView.setTextColor(Color.parseColor("#006400"))
                 going_textView.setTypeface(null, Typeface.BOLD)
                 loadFragment(GoingForLoadFragment())
+                going_switch.isEnabled = false
                 highlightMenuItem(R.id.nav_GoingForLoad)
             } else {
                 going_textView.setTextColor(Color.RED)
@@ -409,6 +411,7 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun highlightMenuItem(menuItemId: Int) {
+
         navView.menu.findItem(menuItemId).isChecked = true
     }
 
@@ -435,9 +438,7 @@ class Dashboard : AppCompatActivity() {
                 val intent = Intent(this, Login::class.java)
                 intent.flags =
                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the back stack
-                SharedPreferencesManager.clearSignedIn(this)
-                SharedPreferencesManager.clearUserRole(this)
-                SharedPreferencesManager.clearRoleId(this)
+                SharedPreferencesManager.clearAll(this)
                 startActivity(intent)
                 return
             }
@@ -544,24 +545,17 @@ class Dashboard : AppCompatActivity() {
                     SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
                     SharedPreferencesManager.savePropertyID(this, userPropertId)
                     SharedPreferencesManager.saveSignedIn(this, true)
-                    if (batchReadyBool && !batchReadyUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
-                    } else {
-                        SharedPreferencesManager.clearLastSubmitTimeBatch(this) // use clear instead of "0"
+                    if (batchReadyBool) {
+                        SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
                     }
 
-                    if (needLoadBool && !needLoadUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
-                    } else {
-                        SharedPreferencesManager.clearLastSubmitTimeNeed(this)
+                    if (needLoadBool) {
+                        SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
                     }
 
-                    if (goingForLoad && !goingForLoadUpdatedTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, goingForLoadUpdatedTime)
-                    } else {
-                        SharedPreferencesManager.clearLastSubmitTimeGoing(this)
+                    if (goingForLoad) {
+                        SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
                     }
-
                     loader.hide()
                 } else {
                     loader.hide()
@@ -599,6 +593,7 @@ class Dashboard : AppCompatActivity() {
 
         } else if (userRoleId == UserRoles.ID_SHOPKEEPER) {
             val needLoad = SharedPreferencesManager.getNeedBoolean(this)
+
             load_switch.isChecked = needLoad
             load_switch.isEnabled = !needLoad
         }
@@ -612,12 +607,53 @@ class Dashboard : AppCompatActivity() {
         super.onResume()
         refreshSwitchStates()
     }
-    fun updateBatchReadySwitch(isActive: Boolean) {
-        load_switch.isChecked = isActive
-        load_switch.isEnabled = !isActive
-        load_textView.setTextColor(if (isActive) Color.parseColor("#006400") else Color.RED)
-        load_switch.setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
+    fun updateBatchReadySwitch(force: Boolean?,isFromSameFragment:Boolean=false) {
+        val ctx = this
+        val batchBool = SharedPreferencesManager.getBatchBoolean(ctx)
+        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+
+        val shouldOn = if (force != null||isFromSameFragment) {
+            force
+        } else {
+            batchBool && !lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null"
+        }
+
+        if (shouldOn == true) {
+            load_switch.isChecked = true
+            load_switch.isEnabled = false
+            load_textView.setTextColor(Color.parseColor("#006400"))
+            load_textView.setTypeface(null, Typeface.BOLD)
+        } else {
+            load_switch.isChecked = false
+            load_switch.isEnabled = true
+            load_textView.setTextColor(Color.RED)
+            load_textView.setTypeface(null, Typeface.NORMAL)
+        }
     }
+    fun updateGoingForLoadSwitch(force: Boolean?,isFromSameFragment:Boolean=false) {
+        val ctx = this
+        val batchBool = SharedPreferencesManager.getGoingBoolean(ctx)
+        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+
+        val shouldOn = if (force != null||isFromSameFragment) {
+            force
+        } else {
+            batchBool && !lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null"
+        }
+
+        if (shouldOn == true) {
+            going_switch.isChecked = true
+            going_switch.isEnabled = false
+            going_textView.setTextColor(Color.parseColor("#006400"))
+            going_switch.setTypeface(null, Typeface.BOLD)
+        } else {
+            going_switch.isChecked = false
+            going_switch.isEnabled = true
+            going_textView.setTextColor(Color.RED)
+            going_switch.setTypeface(null, Typeface.NORMAL)
+        }
+    }
+
 
     fun updateNeedLoadSwitch(isActive: Boolean) {
         load_switch.isChecked = isActive

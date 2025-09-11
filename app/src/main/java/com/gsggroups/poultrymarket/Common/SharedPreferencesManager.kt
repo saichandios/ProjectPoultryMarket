@@ -20,17 +20,17 @@ object SharedPreferencesManager {
     private const val KEY_PIN_LOGIN = "KEY_PIN"
     private const val LAST_SUBMIT_TIMESTAMP_BATCH = "last_submit_timestamp_BatchReady"
     private const val KEY_HEN_COUNT = "hencount_BatchReady"
-    private const val KEY_HEN_COUNT_NEED="hencount_NeedLoad"
-    private const val KEY_HEN_COUNT_GOING="hencount_GoingForLoad"
+    private const val KEY_HEN_COUNT_NEED = "hencount_NeedLoad"
+    private const val KEY_HEN_COUNT_GOING = "hencount_GoingForLoad"
     private const val KEY_HEN_SIZE_BATCH = "hensize_BatchReady"
     private const val KEY_HEN_SIZE_NEED = "hensize_NeedLoad"
     private const val KEY_HEN_SIZE_GOING = "hensize_GoingForLoad"
     private const val LAST_SUBMIT_TIMESTAMP_NEEDLOAD = "last_submit_timestamp_NeedLoad"
     private const val LAST_SUBMIT_TIMESTAMP_GOINGLOAD = "last_submit_timestamp_GoingForLoad"
     private const val KEY_SUBMIT_PENDING = "KEY_SUBMIT_PENDING"
-    private const val KEY_LOGIN_BATCH= "KEY_LOGIN_BOOL"
-    private const val KEY_LOGIN_NEED= "KEY_LOGIN_BOOL"
-    private const val KEY_LOGIN_GOING= "KEY_LOGIN_GOING"
+    private const val KEY_LOGIN_BATCH = "KEY_LOGIN_BOOL"
+    private const val KEY_LOGIN_NEED = "KEY_LOGIN_BOOL"
+    private const val KEY_LOGIN_GOING = "KEY_LOGIN_GOING"
 
     fun saveLastSubmitTimeBatch(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
@@ -40,6 +40,7 @@ object SharedPreferencesManager {
     fun getLastSubmitTimeBatch(context: Context): String? {
         return getPreferences(context).getString(LAST_SUBMIT_TIMESTAMP_BATCH, null)
     }
+
     fun saveLoginMobileNUmber(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_MOBILINUMBER_LOGIN, timestamp).apply()
@@ -48,6 +49,7 @@ object SharedPreferencesManager {
     fun getLoginMobileNumber(context: Context): String? {
         return getPreferences(context).getString(KEY_MOBILINUMBER_LOGIN, null)
     }
+
     fun saveLoginPIN(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_PIN_LOGIN, timestamp).apply()
@@ -56,6 +58,7 @@ object SharedPreferencesManager {
     fun getLoginPIN(context: Context): String? {
         return getPreferences(context).getString(KEY_PIN_LOGIN, null)
     }
+
     fun saveHenCountSubmit(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_COUNT, timestamp).apply()
@@ -64,6 +67,7 @@ object SharedPreferencesManager {
     fun getHenCountSubmit(context: Context): String? {
         return getPreferences(context).getString(KEY_HEN_COUNT, null)
     }
+
     fun saveHenCountSubmitNeed(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_COUNT_NEED, timestamp).apply()
@@ -86,15 +90,19 @@ object SharedPreferencesManager {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_SIZE_NEED, timestamp).apply()
     }
+
     fun clearLastSubmitHensize(context: Context) {
         getPreferences(context).edit().remove(KEY_HEN_SIZE_BATCH).apply()
     }
+
     fun clearLastSubmitHencount(context: Context) {
         getPreferences(context).edit().remove(KEY_HEN_COUNT_NEED).apply()
     }
+
     fun getHenSizeSubmitBatch(context: Context): String? {
         return getPreferences(context).getString(KEY_HEN_SIZE_NEED, null)
     }
+
     fun saveHenSizeSubmitBatch(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_SIZE_BATCH, timestamp).apply()
@@ -103,7 +111,8 @@ object SharedPreferencesManager {
     fun getHenSizeSubmitNeed(context: Context): String? {
         return getPreferences(context).getString(KEY_HEN_SIZE_BATCH, null)
     }
-  fun saveHenSizeSubmitGoing(context: Context, timestamp: String) {
+
+    fun saveHenSizeSubmitGoing(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_SIZE_GOING, timestamp).apply()
     }
@@ -120,6 +129,7 @@ object SharedPreferencesManager {
     fun getBatchBoolean(context: Context): Boolean {
         return getPreferences(context).getBoolean(KEY_LOGIN_BATCH, false)
     }
+
     fun saveNeedBoolean(context: Context, pending: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_LOGIN_NEED, pending).apply()
     }
@@ -128,6 +138,7 @@ object SharedPreferencesManager {
     fun getNeedBoolean(context: Context): Boolean {
         return getPreferences(context).getBoolean(KEY_LOGIN_NEED, false)
     }
+
     fun saveGoingBoolean(context: Context, pending: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_LOGIN_GOING, pending).apply()
     }
@@ -139,6 +150,18 @@ object SharedPreferencesManager {
 
 
     fun clearLastSubmitTimeBatch(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
+
+    fun clearGoingBoolean(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
+
+    fun clearNeedBoolean(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
+
+    fun clearBatchBoolean(context: Context) {
         getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
     }
 
@@ -295,8 +318,14 @@ object SharedPreferencesManager {
         val editor = getPreferences(context).edit()
         editor.putString(KEY_TIME, batchReadyUpdatedDateTime).apply()
     }
-    fun getLastSubmissionTime(context: Context): String ?{
+
+    fun getLastSubmissionTime(context: Context): String? {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPreferences.getString(KEY_TIME, null)
     }
+    fun clearAll(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+    }
+
 }

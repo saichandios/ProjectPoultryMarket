@@ -2,7 +2,6 @@ package com.gsggroups.poultrymarket
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -26,6 +25,7 @@ import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.SubmitLoadRequest
 import com.gsggroups.poultrymarket.SharedDataFiles.SharedViewModel
 import com.gsggroups.poultrymarket.Utils.ApiService
+import com.gsggroups.poultrymarket.Utils.hideKeyboardAfterIdle
 import com.gsggroups.poultrymarket.base.ApiClient
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -51,6 +51,8 @@ object DateTimeUtils {
 
 class BatchReadyFragment : Fragment() {
 
+    private var batchBool: Boolean = false
+    private var needLoadBool: Boolean = false
     private lateinit var loadAvilableText: TextView
     private lateinit var load_available_switch: Switch
     private lateinit var headingText: TextView
@@ -61,6 +63,8 @@ class BatchReadyFragment : Fragment() {
     private lateinit var ActivateAllButton: Button
     private lateinit var loader: LoaderUtils
     var roleId: Int = 936
+    private var debounceHandler = android.os.Handler()
+    private var hideKeyboardRunnable: Runnable? = null
 
     private val sharedViewModel: SharedViewModel by activityViewModels() // 👈 important!
 
@@ -98,21 +102,21 @@ class BatchReadyFragment : Fragment() {
         henCountEditText = view.findViewById(R.id.text_hen_count)
         henSizeSpinner = view.findViewById(R.id.hen_size_spinner) // use ID if set
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
-        submitButton = view.findViewById(R.id.submit_button)
-        ActivateAllButton = view.findViewById(R.id.completed_activate_all_button)
+        submitButton = view.findViewById(R.id.submit_button_batch_need)
+        ActivateAllButton = view.findViewById(R.id.completed_activate_all_button_batch)
         //   sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
-        // Set up a listener to change text color based on switch state
-        load_available_switch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                loadAvilableText.setTextColor(Color.parseColor("#006400"))
-                loadAvilableText.setTypeface(null, Typeface.BOLD)
-            } else {
-                loadAvilableText.setTextColor(Color.RED)
-                loadAvilableText.setTypeface(null, Typeface.NORMAL)
-            }
-        }
-
+        /*  // Set up a listener to change text color based on switch state
+          load_available_switch.setOnCheckedChangeListener { _, isChecked ->
+              if (isChecked) {
+                  loadAvilableText.setTextColor(Color.parseColor("#006400"))
+                  loadAvilableText.setTypeface(null, Typeface.BOLD)
+              } else {
+                  loadAvilableText.setTextColor(Color.RED)
+                  loadAvilableText.setTypeface(null, Typeface.NORMAL)
+              }
+          }
+        */
         val userId = SharedPreferencesManager.getUserId(requireContext())
         val propertyId = SharedPreferencesManager.getPropertyId(requireContext())
         roleId = SharedPreferencesManager.getRoleId(requireContext())?.toInt() ?: 936
@@ -124,9 +128,22 @@ class BatchReadyFragment : Fragment() {
         } else {
             loadDescription = "Need Load"
         }
+        checkAndDisableButtonIfNeeded()
+
         headingText.text = loadDescription
         val editTextSalary = view.findViewById<EditText>(R.id.text_hen_count)
         formatIndianCurrency(editTextSalary)
+
+        henSizeSpinner.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>, view: View?, position: Int, id: Long) {
+                henSizeSpinner.hideKeyboard()
+            }
+
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>) {}
+        })
+        henCountEditText.hideKeyboardAfterIdle()
+
+
 
         ActivateAllButton.setOnClickListener {
             val henSizeFromShared = SharedPreferencesManager.getHenSizeSubmitNeed(requireContext())
@@ -218,56 +235,27 @@ class BatchReadyFragment : Fragment() {
 
         checkAndDisableButtonIfNeeded()
     }
-    /*private fun checkAndDisableButtonIfNeeded() {
-        val ctx = requireContext()
-
-        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
-
-        if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
-            val formatter = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
-            val lastTime = java.time.LocalDateTime.parse(lastSubmit, formatter)
-            val now = java.time.LocalDateTime.now()
-
-            val duration = java.time.Duration.between(lastTime, now)
-            val maxDuration = java.time.Duration.ofHours(24)
-
-            if (duration < maxDuration) {
-                val remaining = maxDuration.minus(duration)
-                val hours = remaining.toHours()
-                val minutes = remaining.toMinutes() % 60
-
-                submitButton.isEnabled = false
-                submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
-                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-                // ✅ Restore Dashboard switch state
-                (requireActivity() as? Dashboard)?.let { dash ->
-                    dash.load_switch.isChecked = true
-                    dash.load_switch.isEnabled = false
-                    dash.load_textView.setTextColor(Color.parseColor("#006400"))
-                    dash.load_textView.setTypeface(null, Typeface.BOLD)
-                }
-
-            } else {
-                // expired → reset
-                submitButton.isEnabled = true
-                submitButton.text = "Submit"
-                submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-                SharedPreferencesManager.clearLastSubmitTimeBatch(ctx)
-            }
-        } else {
-            // No saved submit → normal state
-            submitButton.isEnabled = true
-            submitButton.text = "Submit"
-            submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-            ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-        }
-    }*/
-
 
     private fun checkAndDisableButtonIfNeeded() {
-        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(requireContext())
+        val ctx = requireContext()
+        var lastSubmit: String? = null
+        var isSubmitted = false
+
+        // Pick correct pref based on role
+        when (roleId) {
+            UserRoles.ID_FARMER -> {
+                batchBool = SharedPreferencesManager.getBatchBoolean(ctx)
+                lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+                isSubmitted = sharedViewModel.batchReady.value ?: false
+            }
+
+            UserRoles.ID_TRADER, UserRoles.ID_SHOPKEEPER -> {
+                needLoadBool = SharedPreferencesManager.getNeedBoolean(ctx)
+
+                lastSubmit = SharedPreferencesManager.getLastSubmitTimeNeed(ctx)
+                isSubmitted = sharedViewModel.needLoad.value ?: false
+            }
+        }
 
         if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
             val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -276,7 +264,8 @@ class BatchReadyFragment : Fragment() {
             val duration = Duration.between(lastTime, now)
             val maxDuration = Duration.ofHours(24)
 
-            if (duration < maxDuration) {
+            if (duration < maxDuration && isSubmitted) {
+                // Still inside cooldown
                 val remaining = maxDuration.minus(duration)
                 val hours = remaining.toHours()
                 val minutes = remaining.toMinutes() % 60
@@ -287,83 +276,48 @@ class BatchReadyFragment : Fragment() {
 
                 ActivateAllButton.isEnabled = true
                 ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
-
-//                sharedViewModel.setBatchReady(true)
-//                sharedViewModel.setNeedLoad(true)
                 return
+            } else {
+                when (roleId) {
+                    UserRoles.ID_FARMER -> SharedPreferencesManager.clearLastSubmitTimeBatch(ctx)
+                    UserRoles.ID_TRADER, UserRoles.ID_SHOPKEEPER -> SharedPreferencesManager.clearLastSubmitTimeNeed(
+                        ctx
+                    )
+                }
             }
         }
+        if (batchBool && roleId == UserRoles.ID_FARMER) {
+            submitButton.isEnabled = false
+            submitButton.text = "Submit"
+            submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
 
-        // Default state
-        submitButton.isEnabled = true
-        submitButton.text = "Submit"
-        submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+            ActivateAllButton.isEnabled = true
+            ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+        } else
+            if (needLoadBool && roleId == UserRoles.ID_TRADER) {
+                submitButton.isEnabled = false
+                submitButton.text = "Submit"
+                submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
 
-        ActivateAllButton.isEnabled = false
-        ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-
-//        sharedViewModel.setBatchReady(false)
-    }
-
-
-    /*
-        private fun checkAndDisableButtonIfNeeded(isfromSubmit: Boolean) {
-            var lastSubmit = ""
-            if (roleId == UserRoles.ID_FARMER) {
-                lastSubmit =
-                    SharedPreferencesManager.getLastSubmitTimeBatch(requireContext()).toString()
-            } else {
-                lastSubmit = SharedPreferencesManager.getLastSubmitTimeNeed(requireContext()).toString()
-            }
-            if (!lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null") {
-                val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                val lastTime = LocalDateTime.parse(lastSubmit, formatter)
-                val now = LocalDateTime.now()
-
-                val duration = Duration.between(lastTime, now)
-                val maxDuration = Duration.ofHours(24)
-
-                if (duration < maxDuration) {
-                    val remaining = maxDuration.minus(duration)
-                    val hours = remaining.toHours()
-                    val minutes = remaining.toMinutes() % 60
-
+                ActivateAllButton.isEnabled = true
+                ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+            } else
+                if (needLoadBool && roleId == UserRoles.ID_SHOPKEEPER) {
                     submitButton.isEnabled = false
-                    submitButton.text = "Submitted (Wait ${hours} hrs ${minutes} mins)"
+                    submitButton.text = "Submit"
                     submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-                    when (roleId) {
-                        UserRoles.ID_FARMER -> sharedViewModel.setBatchReady(true)
-                        UserRoles.ID_TRADER -> sharedViewModel.setNeedLoad(true)
-                    }
 
+                    ActivateAllButton.isEnabled = true
+                    ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
                 } else {
                     submitButton.isEnabled = true
                     submitButton.text = "Submit"
                     submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-                    when (roleId) {
-                        UserRoles.ID_FARMER -> {
-                            SharedPreferencesManager.clearLastSubmitTimeBatch(requireContext())
-                        }
 
-                        UserRoles.ID_TRADER -> {
-                            SharedPreferencesManager.clearLastSubmitTimeNeed(requireContext())
-                        }
-
-                        else -> {
-                            SharedPreferencesManager.clearLastSubmitTimeNeed(requireContext())
-                        }
-                    }
-
+                    ActivateAllButton.isEnabled = false
+                    ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
                 }
-            } else {
-                submitButton.isEnabled = true
-                submitButton.text = "Submit"
-                ActivateAllButton.isEnabled = false
-                submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
-                ActivateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
-            }
-        }
-    */
+    }
 
     fun formatIndianCurrency(editText: EditText) {
         editText.addTextChangedListener(object : TextWatcher {
@@ -465,7 +419,7 @@ class BatchReadyFragment : Fragment() {
                 )
             }
 
-            UserRoles.ID_TRADER -> {
+            UserRoles.ID_TRADER, UserRoles.ID_SHOPKEEPER -> {
                 SubmitLoadRequest(
                     userId = userId,
                     propertyId = propertyId,
@@ -479,16 +433,16 @@ class BatchReadyFragment : Fragment() {
             }
 
             else -> {
-                SubmitLoadRequest(
-                    userId = userId,
-                    propertyId = propertyId,
-                    distrcitIds = listOf(1, 2),
-                    message = message,
-                    roleId = roleId,
-                    henCount = cleanHenCount.toInt(),
-                    henWeight = henSizeFloat,
-                    needLoad = isActivate
-                )
+                /* SubmitLoadRequest(
+                     userId = userId,
+                     propertyId = propertyId,
+                     distrcitIds = listOf(1, 2),
+                     message = message,
+                     roleId = roleId,
+                     henCount = cleanHenCount.toInt(),
+                     henWeight = henSizeFloat,
+                     needLoad = isActivate
+                 )*/
             }
         }
 
@@ -531,6 +485,7 @@ class BatchReadyFragment : Fragment() {
 
                         ActivateAllButton.isEnabled = true
                         ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                        SharedPreferencesManager.saveBatchBoolean(ctx, true)
 
                         SharedPreferencesManager.saveHenCountSubmitNeed(ctx, henCount)
                         SharedPreferencesManager.saveHenSizeSubmitNeed(ctx, henSizeFloat.toString())
@@ -539,13 +494,24 @@ class BatchReadyFragment : Fragment() {
                             (requireActivity() as? Dashboard)?.updateBatchReadySwitch(true)
                         } else {
                             sharedViewModel.setNeedLoad(true)
-                            (requireActivity() as? Dashboard)?.updateNeedLoadSwitch(true)
+                            (requireActivity() as? Dashboard)?.updateBatchReadySwitch(true)
                         }
                         // ✅ Save pref + update sharedViewModel
                         when (roleId) {
-                            UserRoles.ID_FARMER -> SharedPreferencesManager.saveLastSubmitTimeBatch(ctx, DateTimeUtils.formattedDateTime)
-                            UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeNeed(ctx, DateTimeUtils.formattedDateTime)
-                            else -> SharedPreferencesManager.saveLastSubmitTimeNeed(ctx, DateTimeUtils.formattedDateTime)
+                            UserRoles.ID_FARMER -> SharedPreferencesManager.saveLastSubmitTimeBatch(
+                                ctx,
+                                DateTimeUtils.formattedDateTime
+                            )
+
+                            UserRoles.ID_TRADER -> SharedPreferencesManager.saveLastSubmitTimeNeed(
+                                ctx,
+                                DateTimeUtils.formattedDateTime
+                            )
+
+                            else -> SharedPreferencesManager.saveLastSubmitTimeNeed(
+                                ctx,
+                                DateTimeUtils.formattedDateTime
+                            )
                         }
 
                     } else {
@@ -559,9 +525,12 @@ class BatchReadyFragment : Fragment() {
                         if (roleId == UserRoles.ID_FARMER) {
                             sharedViewModel.setBatchReady(false)
                             (requireActivity() as? Dashboard)?.updateBatchReadySwitch(false)
+                            SharedPreferencesManager.saveBatchBoolean(ctx, false)
                         } else {
                             sharedViewModel.setNeedLoad(false)
-                            (requireActivity() as? Dashboard)?.updateNeedLoadSwitch(false)
+                            (requireActivity() as? Dashboard)?.updateBatchReadySwitch(false)
+                            SharedPreferencesManager.saveNeedBoolean(ctx, false)
+
                         }
                         // Clear last submit time + saved hen data
                         when (roleId) {
@@ -587,8 +556,6 @@ class BatchReadyFragment : Fragment() {
                     henSizeSpinner.setSelection(0)
 
 
-
-
                 } else {
                     Log.e("SubmitLoad", "Failed: ${response.message}")
                     Toast.makeText(ctx, "Submit failed: ${response.message}", Toast.LENGTH_SHORT)
@@ -606,5 +573,21 @@ class BatchReadyFragment : Fragment() {
         )
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Optional: save form progress if you want
+        // Example: save hen count text temporarily
+        if (SharedPreferencesManager.getBatchBoolean(requireContext()) == false || SharedPreferencesManager.getNeedBoolean(
+                requireContext()
+            ) == false
+        ) {
+            (requireActivity() as? Dashboard)?.updateBatchReadySwitch(null, false)
+
+        }
+    }
+    fun View.hideKeyboard() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(windowToken, 0)
+    }
 
 }
