@@ -120,9 +120,7 @@ class FarmerFragment : Fragment() {
                 // Get the districts for this state
                 val selectedState = states[position]
                 val districts = DropDownManager.getDistrictsForState(selectedState)
-                if (filterButton.text == "Clear") {
-                    filterButton.text = "Filter"
-                }
+
 
                 // Set up district adapter
                 val districtAdapter = ArrayAdapter(
@@ -131,12 +129,18 @@ class FarmerFragment : Fragment() {
                     setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 }
                 districtSpinner.adapter = districtAdapter
-
+                if (filterButton.text == "Clear") {
+                    filterButton.text = "Filter"
+                }
                 // Reset district position
-                selectedDistrictPosition = 0
+                selectedDistrictPosition = 1
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                selectedStatePosition = 0
+                selectedDistrictPosition = 0
+
+            }
         }
 
 // District selection listener
@@ -144,15 +148,21 @@ class FarmerFragment : Fragment() {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
-                // Store district position
-                selectedDistrictPosition = position+1
+                if (selectedStatePosition == 0) {
+                    selectedDistrictPosition = 0
+                } else {
+                    selectedDistrictPosition = position + 1
+
+                }
                 if (filterButton.text == "Clear") {
                     filterButton.text = "Filter"
                 }
 
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+
+            }
         }
     }
 
@@ -225,6 +235,14 @@ class FarmerFragment : Fragment() {
                 filterButton.text = "Filter"
 
             } else {
+
+                if (stateSpinner.selectedItemPosition == 0) {
+                    selectedDistrictPosition = 0
+                    selectedStatePosition = 0
+                } else {
+                    selectedDistrictPosition = districtSpinner.selectedItemPosition + 1
+                    selectedStatePosition =stateSpinner.selectedItemPosition
+                }
                 // Apply filter
                 getUserList(userId, reset = true)
                 // ✅ Change button text to Clear
@@ -360,12 +378,14 @@ class FarmerFragment : Fragment() {
                             searchView.clearFocus()
 
                         }
+
                         query == "batchready" || query == "needload" || query == "goingforload" || query.length >= searchCharLimit -> {
                             getUserList(userId, reset = true)
                             hideKeyboard(searchView)
                             searchView.clearFocus()
 
                         }
+
                         else -> {
                             personAdapter.updateList(arrayListOf())
                         }
@@ -589,7 +609,7 @@ class FarmerFragment : Fragment() {
             user.batchReady -> "Status: Batch Ready" to "green"
             else -> "Status: Batch not Ready" to "orange"
         }
-            return UserModel(
+        return UserModel(
             role = getRoleName(user.roleID) ?: "Unknown",
             name = user.name ?: "No Name",
             detail = "Mobile: ${user.mobileNumber}",
@@ -645,8 +665,10 @@ class FarmerFragment : Fragment() {
             goingForLoad = goingForLoad
         )
     }
+
     private fun hideKeyboard(view: View) {
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 

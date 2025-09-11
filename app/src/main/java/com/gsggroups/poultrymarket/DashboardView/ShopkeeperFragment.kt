@@ -133,10 +133,14 @@ class ShopkeeperFragment : Fragment() {
                 districtSpinner.adapter = districtAdapter
 
                 // Reset district position
-                selectedDistrictPosition = -1
+                selectedDistrictPosition = 1
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                selectedStatePosition = 0
+                selectedDistrictPosition = 0
+
+            }
         }
 
 // District selection listener
@@ -145,8 +149,12 @@ class ShopkeeperFragment : Fragment() {
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 // Store district position
-                selectedDistrictPosition = position+1
+                if (selectedStatePosition == 0) {
+                    selectedDistrictPosition = 0
+                } else {
+                    selectedDistrictPosition = position + 1
 
+                }
                 if (filterButton.text == "Clear") {
                     filterButton.text = "Filter"
                 }
@@ -223,6 +231,13 @@ class ShopkeeperFragment : Fragment() {
                 filterButton.text = "Filter"
 
             } else {
+                if (stateSpinner.selectedItemPosition == 0) {
+                    selectedDistrictPosition = 0
+                    selectedStatePosition = 0
+                } else {
+                    selectedDistrictPosition = districtSpinner.selectedItemPosition + 1
+                    selectedStatePosition =stateSpinner.selectedItemPosition
+                }
                 // Apply filter
                 getUserList(userId, reset = true)
                 // ✅ Change button text to Clear
