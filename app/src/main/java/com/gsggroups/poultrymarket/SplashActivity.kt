@@ -24,10 +24,6 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-
-
-//                 uploadJsonToFirestore()
-        
             //Delay
             val signInStatus = SharedPreferencesManager.getSignedIn(this)
         if (signInStatus) {

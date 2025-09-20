@@ -1,10 +1,8 @@
 package com.gsggroups.poultrymarket
 
-import LoginResponse
 import android.content.Context
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
+import android.os.Bundle
 import android.text.Html
 import android.util.Log
 import android.view.View
@@ -13,21 +11,17 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.CustomAlertDialog
 import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.RetrofitClient
-import com.gsggroups.poultrymarket.DashboardView.Dashboard
-import com.gsggroups.poultrymarket.Model.ApiResponse
-import com.gsggroups.poultrymarket.Model.LoginRequest
-import org.json.JSONObject
-import com.google.gson.Gson
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
+import com.gsggroups.poultrymarket.DashboardView.Dashboard
+import com.gsggroups.poultrymarket.Model.LoginRequest
 import com.gsggroups.poultrymarket.Utils.ApiService
 import com.gsggroups.poultrymarket.base.ApiClient
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 
 class Login : AppCompatActivity() {
@@ -121,12 +115,16 @@ class Login : AppCompatActivity() {
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
-                SharedPreferencesManager.saveLoginPIN(this,pin)
-                SharedPreferencesManager.saveLoginMobileNUmber(this,mobile)
+                SharedPreferencesManager.saveLoginPIN(this, pin)
+                SharedPreferencesManager.saveLoginMobileNUmber(this, mobile)
 
                 if (response.isSuccess) {
+                    startActivity(Intent(this, Dashboard::class.java))
+                    finish()
+                    loader.hide()
                     val userDetails = response.item.userID  // This gets the UserDetails object
-                    val userPropertId = response.item.properties[0].propertyID  // This gets the UserDetails object
+                    val userPropertId =
+                        response.item.propertyList[0].propertyID  // This gets the UserDetails object
                     val roleIDfromLogin = response.item.roleID  // This gets the UserDetails object
                     val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime
                     val needLoadUpdatedDateTime = response.item.needLoadUpdatedDateTime
@@ -145,29 +143,55 @@ class Login : AppCompatActivity() {
                     //       intent.putExtra("getUserRequest", Gson().toJson(getUserListRequest))
                     SharedPreferencesManager.saveUserID(this, userDetails)
                     SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
+                    SharedPreferencesManager.saveHenCountSubmit(this, "" + response.item.henCount)
+                    SharedPreferencesManager.saveHenSizeSubmitBatch(
+                        this,
+                        "" + response.item.henWeight
+                    )
+                    SharedPreferencesManager.saveHenCountSubmitGoing(
+                        this,
+                        "" + response.item.henCount
+                    )
+                    SharedPreferencesManager.saveHenSizeSubmitGoing(
+                        this,
+                        "" + response.item.henWeight
+                    )
                     SharedPreferencesManager.savePropertyID(this, userPropertId)
+                    SharedPreferencesManager.saveStateId(this, response.item.stateID)
+                    SharedPreferencesManager.saveDistrictId(this, response.item.districtID)
                     SharedPreferencesManager.saveSignedIn(this, true)
-                    if (batchReadyBool&&!batchReadyUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
-                    } else {
-                        SharedPreferencesManager.saveBatchBoolean(this, false)
-                    }
+                    SharedPreferencesManager.savePropertyList(this, response.item.propertyList)
+                    SharedPreferencesManager.saveUserName(this, response.item.name)
+                    SharedPreferencesManager.saveUserForm(
+                        this,
+                        response.item.propertyList[0].propertyName
+                    )
+                    SharedPreferencesManager.saveUserFormAddress1(
+                        this,
+                        response.item.propertyList[0].address1
+                    )
+                    SharedPreferencesManager.saveUserFormAddress2(
+                        this,
+                        response.item.propertyList[0].address2
+                    )
+                    Log.d(
+                        "save----------",
+                        "" + SharedPreferencesManager.getBatchBoolean(this)
+                    )
+                    SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
+                    SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
+                    SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
+//                    if (batchReadyBool) {
+//                        SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
+//                    }
+//
+//                    if (needLoadBool) {
+//                        SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
+//                    }
+//                    if (goingForLoad) {
+//                        SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
+//                    }
 
-                    if (needLoadBool && !needLoadUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
-                    } else {
-                        SharedPreferencesManager.saveNeedBoolean(this, false)
-                    }
-
-                    if (goingForLoad&&!goingForLoadUpdatedTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
-                    } else {
-                        SharedPreferencesManager.saveGoingBoolean(this,false)
-                    }
-
-                    startActivity(Intent(this, Dashboard::class.java))
-                    finish()
-                    loader.hide()
                 } else {
                     loader.hide()
 
@@ -183,7 +207,8 @@ class Login : AppCompatActivity() {
                         println("Login Alert Ok pressed: $error")
                     }
                     .showCancelButton(false)
-                    .show()            }
+                    .show()
+            }
         )
     }
 

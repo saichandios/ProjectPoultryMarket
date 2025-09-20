@@ -1,6 +1,9 @@
 package com.gsggroups.poultrymarket.Model
 
 import com.google.gson.annotations.SerializedName
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 
 data class UserRequest(
     val userID: String = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -90,7 +93,7 @@ data class UserItem(
     val needLoad: Boolean,
     val goingForLoad: Boolean,
     val henCount: Int,
-    val henWeight: Int,
+    val henWeight: Float,
     val mobileNumber: String,
     val propertyList: List<Property>,
     val subscriptionID: Int,
@@ -153,15 +156,15 @@ data class UserItematList(
     val needLoadUpdatedDateTime: String,
     val goingForLoadUpdatedDateTime: String,
     val henCount: Int,
-    val henWeight: Int,
+    val henWeight: Float,
     val mobileNumber: String,
-    val propertyList: List<Property>
+    val propertyList: List<PropertyModel>
 )
 
 data class ItemModel(
     val items: List<UserModel> = emptyList()
 )
-
+@Parcelize
 data class UserModel(
     val userID: String = "",
     val roleID: Int = 0,
@@ -178,7 +181,7 @@ data class UserModel(
     val needLoadUpdatedDateTime: String? = "",
     val goingForLoadUpdatedDateTime: String? = "",
     val henCount: Int = 0,
-    val henWeight: Double = 0.0,
+    val henWeight: Float = 0.0f,
     val mobileNumber: String = "",
     val propertyList: List<PropertyModel> = emptyList(),
 
@@ -189,8 +192,9 @@ data class UserModel(
     val status: String,
     var colorTemp: String = "bgColor"
 
-)
+): Parcelable
 
+@Parcelize
 data class PropertyModel(
     val propertyID: String = "",
     val userID: String = "",
@@ -202,7 +206,7 @@ data class PropertyModel(
     val createdDateTime: String = "",
     val updatedDateTime: String = "",
     val isDeleted: Boolean = false
-)
+): Parcelable
 
 
 //======================================================
@@ -258,7 +262,7 @@ data class BatchReadyRequest(
     val message: String,
     val roleId: Int,
     val henCount: Int,
-    val henWeight: Double,
+    val henWeight: Float,
     val loadAvailable: Boolean
 )
 data class BatchReadyResponse(

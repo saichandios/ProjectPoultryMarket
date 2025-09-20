@@ -2,6 +2,7 @@ package com.gsggroups.poultrymarket.Common
 
 import android.util.Log
 import com.gsggroups.poultrymarket.Utils.ApiResponse
+import com.gsggroups.poultrymarket.Utils.ApiResponseNew
 import com.gsggroups.poultrymarket.base.ApiClient
 import org.json.JSONObject
 import retrofit2.Call
@@ -54,6 +55,36 @@ object ApiHelper {
             }
 
             override fun onFailure(call: Call<ApiResponse<T>>, t: Throwable) {
+                onFailure(t.localizedMessage ?: "Something went wrong")
+            }
+        })
+    }
+    fun <T> postNew(
+        endpointCall: Call<ApiResponseNew<T>>,
+        onSuccess: (ApiResponseNew<T>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        endpointCall.enqueue(object : Callback<ApiResponseNew<T>> {
+            override fun onResponse(
+                call: Call<ApiResponseNew<T>>,
+                response: Response<ApiResponseNew<T>>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    onSuccess(response.body()!!)
+                } else {
+                    val errorMsg = try {
+                        val errorBody = response.errorBody()?.string()
+                        val errorJson = JSONObject(errorBody ?: "")
+                        errorJson.optString("message", response.message()) // fallback to generic message
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        response.message()
+                    }
+                    onFailure(errorMsg)
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponseNew<T>>, t: Throwable) {
                 onFailure(t.localizedMessage ?: "Something went wrong")
             }
         })

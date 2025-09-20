@@ -1,8 +1,17 @@
 package com.gsggroups.poultrymarket.Utils
+
+import com.google.gson.annotations.SerializedName
+
 data class ApiResponse<T>(
     val isSuccess: Boolean,
     val message: String,
     val item: T,
+    val statusCode: Int? = null,
+)
+data class ApiResponseNew<T>(
+    val isSuccess: Boolean,
+    val message: String,
+    val newItem: T,
     val statusCode: Int? = null,
 )
 
@@ -23,9 +32,11 @@ data class UserItem(
     val needLoad: Boolean,
     val goingForLoad: Boolean,
     val henCount: Int,
-    val henWeight: Int,
+    val henWeight: Float,
     val mobileNumber: String,
-    val properties: List<Property>
+    // 🔥 Accept both "propertyList" and "properties"
+    @SerializedName(value = "propertyList", alternate = ["properties"])
+    val propertyList: List<Property> = emptyList()
 )
 
 data class Property(

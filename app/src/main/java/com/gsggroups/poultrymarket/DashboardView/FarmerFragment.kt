@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -17,15 +16,13 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import com.gsggroups.poultrymarket.Common.ApiHelper
 import com.gsggroups.poultrymarket.Common.CustomAlertDialog
 import com.gsggroups.poultrymarket.Common.DropDownManager
@@ -34,8 +31,7 @@ import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.Employement.EmployeDetails
 import com.gsggroups.poultrymarket.Model.GetUserList
-import com.gsggroups.poultrymarket.Model.ListResponseModel
-import com.gsggroups.poultrymarket.Model.ListRoleRequest
+import com.gsggroups.poultrymarket.Model.UserItematList
 import com.gsggroups.poultrymarket.Model.UserModel
 import com.gsggroups.poultrymarket.R
 import com.gsggroups.poultrymarket.Utils.ApiService
@@ -61,23 +57,27 @@ class FarmerFragment : Fragment() {
     private lateinit var filterButton: Button
     private lateinit var stateSpinner: Spinner
     private lateinit var districtSpinner: Spinner
-    private lateinit var userList_1: ArrayList<UserModel>
+    private var userList_1 = ArrayList<UserModel>()
     var userRoleId: Int = 0
     var userRoleName: String = ""
     var selectedStatePosition = 0
     var selectedDistrictPosition = 0
     private lateinit var loader: LoaderUtils
+    private var searchRunnable: Runnable? = null
+    private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
 
     private var currentPage = 1
     private var isLoading = false
     private var isLastPage = false
-    private val pageSizeInitial = 20
-    private val pageSizeLoadMore = 10
+    private val pageSizeInitial = 15
+    private val pageSizeLoadMore = 15
+    private val searchCharLimit = 4
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private var initialUserList = ArrayList<UserModel>() // first loaded common list
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +122,7 @@ class FarmerFragment : Fragment() {
                 val selectedState = states[position]
                 val districts = DropDownManager.getDistrictsForState(selectedState)
 
+
                 // Set up district adapter
                 val districtAdapter = ArrayAdapter(
                     requireContext(), android.R.layout.simple_spinner_item, districts
@@ -129,12 +130,18 @@ class FarmerFragment : Fragment() {
                     setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 }
                 districtSpinner.adapter = districtAdapter
-
+                if (filterButton.text == "Clear") {
+                    filterButton.text = "Filter"
+                }
                 // Reset district position
-                selectedDistrictPosition = -1
+                selectedDistrictPosition = 1
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                selectedStatePosition = 0
+                selectedDistrictPosition = 0
+
+            }
         }
 
 // District selection listener
@@ -142,11 +149,21 @@ class FarmerFragment : Fragment() {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
-                // Store district position
-                selectedDistrictPosition = position
+                if (selectedStatePosition == 0) {
+                    selectedDistrictPosition = 0
+                } else {
+                    selectedDistrictPosition = position + 1
+
+                }
+                if (filterButton.text == "Clear") {
+                    filterButton.text = "Filter"
+                }
+
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+
+            }
         }
     }
 
@@ -170,17 +187,26 @@ class FarmerFragment : Fragment() {
         recyclerView = view.findViewById(R.id.dashboardRecyclerView)
         filterButton = view.findViewById(R.id.farmer_filter_button)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.setHasFixedSize(true)
 
         // Inflate the layout for this fragment
         userRoleId = SharedPreferencesManager.getRoleId(requireContext())?.toInt() ?: 0
         userRoleName = UserRoles.getRoleNameById(userRoleId).toString()
+        val userId = SharedPreferencesManager.getUserId(requireContext())
+        // Initialize adapter once with empty list
+        userList_1 = ArrayList()
 
+        personAdapter = RecyclerAdapter(userList_1,"FarmerFragment") { person ->
+            val intent = Intent(requireContext(), EmployeDetails::class.java).apply {
+                putExtra("user_data", person)
+                putExtra("source", "FarmerFragment")
+
+            }
+            startActivity(intent)
+        }
+        recyclerView.adapter = personAdapter
         setupDropDown()
 
-        val userId = SharedPreferencesManager.getUserId(requireContext())
         getUserList(userId)
-
 //        userList_1.forEach { user ->
 //            // Normalize and check the status
 //            val trimmedStatus = user.status.trim().replace("\\s+".toRegex(), " ")
@@ -199,24 +225,48 @@ class FarmerFragment : Fragment() {
 
         filterButton.setOnClickListener {
             val userId = SharedPreferencesManager.getUserId(requireContext())
-            getUserList(userId)
+            if (filterButton.text == "Clear") {
+                // Reset spinners and reload default list
+                stateSpinner.setSelection(0)
+                districtSpinner.setSelection(0)
+                selectedStatePosition = 0
+                selectedDistrictPosition = 0
+
+                getUserList(userId, reset = true)
+                filterButton.text = "Filter"
+
+            } else {
+
+                if (stateSpinner.selectedItemPosition == 0) {
+                    selectedDistrictPosition = 0
+                    selectedStatePosition = 0
+                } else {
+                    selectedDistrictPosition = districtSpinner.selectedItemPosition + 1
+                    selectedStatePosition =stateSpinner.selectedItemPosition
+                }
+                // Apply filter
+                getUserList(userId, reset = true)
+                // ✅ Change button text to Clear
+                filterButton.text = "Clear"
+            }
+
         }
 
 
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
 
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(rv, dx, dy)
+
+                val layoutManager = rv.layoutManager as LinearLayoutManager
                 val visibleItemCount = layoutManager.childCount
                 val totalItemCount = layoutManager.itemCount
-                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
 
                 if (!isLoading && !isLastPage) {
-                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                        && firstVisibleItemPosition >= 0
-                        && totalItemCount >= pageSizeLoadMore
-                    ) {
+                    if ((visibleItemCount + firstVisibleItem) >= totalItemCount) {
+                        // no hard check on pageSizeLoadMore
+                        personAdapter.showLoadingFooter(true)
                         loadMoreItems()
                     }
                 }
@@ -224,133 +274,148 @@ class FarmerFragment : Fragment() {
         })
     }
 
-    private fun getUserList( userId: String?) {
-        loader.show()
-        userList_1 = ArrayList()
+    /*
+        private fun getUserList(userId: String?) {
+            loader.show()
+            currentPage = 1
+            isLastPage = false
+            isLoading = true
+            val request = buildUserListRequest(userId, currentPage, pageSizeInitial)
 
-        val request = GetUserList(
-            userId = userId ?: "",
-            roleId = UserRoles.ID_FARMER,
-            pageNumber = 1,
-            pageSize = 20,
-            search = searchView.query.toString(),
-            sortColumn = "",
-            sortDirection = "",
-            stateId = selectedStatePosition,
-            districtId = selectedDistrictPosition,
-            batchReady = false,
-            needLoad = false,
-            goingForLoad = false
-        )
-        val call = ApiClient.retrofit
-            .create(ApiService::class.java)
-            .getUserList(request)
+            val call = ApiClient.retrofit.create(ApiService::class.java).getUserList(request)
+
+           */
+    /* val request = GetUserList(
+                userId = userId ?: "",
+                roleId = UserRoles.ID_FARMER,
+                pageNumber = currentPage,
+                pageSize = pageSizeInitial,
+                search = searchView.query.toString(),
+                sortColumn = "",
+                sortDirection = "",
+                stateId = selectedStatePosition,
+                districtId = selectedDistrictPosition,
+                batchReady = false,
+                needLoad = false,
+                goingForLoad = false
+            )
+
+            val call = ApiClient.retrofit.create(ApiService::class.java).getUserList(request)
+    *//*initialUserList*/
+    private fun getUserList(userId: String?, reset: Boolean = true) {
+        if (reset) {
+            currentPage = 1
+            isLastPage = false
+            userList_1.clear()
+            personAdapter.updateList(arrayListOf()) // clear adapter
+        }
+
+        loader.show()
+        isLoading = true
+
+        val request = buildUserListRequest(userId, currentPage, pageSizeInitial)
+        val call = ApiClient.retrofit.create(ApiService::class.java).getUserList(request)
+
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
-                if (response.isSuccess) {
-                    userList_1.clear()
+                loader.hide()
+                isLoading = false
 
-                    val fetchedUsers = response.item.items
-                    if (fetchedUsers.isEmpty()) {
-                        loader.hide()
-                        personAdapter = RecyclerAdapter(userList_1) { /* item click logic */ }
-                        recyclerView.adapter = personAdapter
+                if (response.isSuccess) {
+                    val mappedUsers = response.item.items.map { user -> mapUser(user) }
+                    initialUserList.clear()
+                    initialUserList.addAll(mappedUsers) // save first loaded list
+                    if (mappedUsers.isEmpty()) {
                         CustomAlertDialog(requireContext())
                             .setTitle("No data found!")
-                            .setDescription("Farmers are not available")
+                            .setDescription("Farmers are not available in this Location")
                             .showOkButton(true, "OK") {
                                 println("User acknowledged the error.")
                             }
                             .showCancelButton(false)
                             .show()
                         return@post
-                    }
-
-                    for (user in fetchedUsers) {
-                        val status = when {
-                            user.batchReady -> "Status: Batch Ready"
-                            else -> "Status: Batch not available"
+                    } else {
+                        if (reset) {
+                            personAdapter.updateList(mappedUsers)   // fresh set
+                        } else {
+                            personAdapter.appendList(mappedUsers)   // append for pagination
                         }
-
-                        val color = if (user.batchReady) "green" else "orange"
-
-                        val userModel = UserModel(
-                            role = getRoleName(user.roleID) ?: "Unknown",
-                            name = user.name ?: "No Name",
-                            detail = "Mobile: ${user.mobileNumber}",
-                            detail2 = "Farm Name: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
-                            status = status,
-                            colorTemp = color,
-                            batchReady = user.batchReady,
-                            needLoad = user.needLoad,
-                            goingForLoad = user.goingForLoad,
-                            batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
-                            needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
-                            goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime,
-                            stateID = user.stateID,
-                            districtID = user.districtID
-                        )
-                        userList_1.add(userModel)
                     }
 
-                    personAdapter = RecyclerAdapter(userList_1) { person ->
-                        val intent = Intent(context, EmployeDetails::class.java).apply {
-                            putExtra("name", person.name)
-                            putExtra("role", person.role)
-                            putExtra("mobile", person.detail)
-                        }
-                        startActivity(intent)
-                    }
-
-                    recyclerView.adapter = personAdapter
-                    loader.hide()
-                } else {
-                    Log.e("Dashboard", "Error: ${response.message}")
+                    isLastPage = mappedUsers.size < pageSizeInitial
                 }
             },
             onFailure = { error ->
-                Log.e("Dashboard", "Error: $error")
+                loader.hide()
+                isLoading = false
+                Log.e("FarmerFragment", "API Failure: $error")
             }
         )
-
-
-//       private fun setupSearchView() {
-//        searchView.setIconifiedByDefault(false)
-//            // Set up listener for text changes in SearchView
-//            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//                return false
-//            }
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                personAdapter.filter(newText ?: "")
-//                return true
-//            }
-//             })
-//        }
     }
-
-
 
     private fun setupSearchView() {
         searchView.setIconifiedByDefault(false)
-
-        // Listen for query text changes
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
+                val userId = SharedPreferencesManager.getUserId(requireContext())
+                if (!query.isNullOrBlank()) {
+                    val q = query.trim().lowercase()
+                    if (q.length >= searchCharLimit || q == "batchready" || q == "needload" || q == "goingforload") {
+                        getUserList(userId, reset = true) //
+                    }
+                }
+                hideKeyboard(searchView)
+                searchView.clearFocus()
+
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                personAdapter.filter(newText ?: "")
+                searchRunnable?.let { searchHandler.removeCallbacks(it) }
+
+                searchRunnable = Runnable {
+                    val query = newText?.trim()?.lowercase() ?: ""
+                    val userId = SharedPreferencesManager.getUserId(requireContext())
+
+                    when {
+                        query.isEmpty() -> {
+                            // Show initial first-loaded list
+//                            personAdapter.updateList(initialUserList)
+//                            currentPage = 1
+//                            isLastPage = false
+                            getUserList(userId, reset = true)
+                            hideKeyboard(searchView)
+                            searchView.clearFocus()
+
+                        }
+
+                        query == "batchready" || query == "needload" || query == "goingforload" || query.length >= searchCharLimit -> {
+                            getUserList(userId, reset = true)
+                            hideKeyboard(searchView)
+                            searchView.clearFocus()
+
+                        }
+                        query.length < searchCharLimit -> {
+                            personAdapter.filter(newText ?: "")
+                        }
+                        else -> {
+                            personAdapter.updateList(arrayListOf())
+                        }
+                    }
+                }
+
+                searchHandler.postDelayed(searchRunnable!!, 500)
                 return true
             }
+
         })
 
-        // Add touch listener to detect drawable (e.g., right icon) click
-        val searchEditText = searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
+        val searchEditText =
+            searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
         searchEditText.setOnTouchListener { v, event ->
-            val drawableEnd = searchEditText.compoundDrawables[2] // Right drawable
+            val drawableEnd = searchEditText.compoundDrawables[2]
             if (drawableEnd != null && event.action == MotionEvent.ACTION_UP) {
                 val drawableWidth = drawableEnd.bounds.width()
                 if (event.rawX >= (searchEditText.right - drawableWidth)) {
@@ -361,12 +426,10 @@ class FarmerFragment : Fragment() {
             false
         }
 
-        // Show popup when SearchView is clicked
         searchView.setOnClickListener {
             showHistoryPopup(searchView)
         }
 
-        // Also optional: Show popup when SearchView gains focus (in case user taps into the field)
         searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 showHistoryPopup(searchView)
@@ -423,62 +486,133 @@ class FarmerFragment : Fragment() {
     }
 
 
+
     private fun loadMoreItems() {
         isLoading = true
         currentPage++
 
         val userId = SharedPreferencesManager.getUserId(requireContext())
-        val request = GetUserList(
-            userId = userId ?: "",
-            roleId = UserRoles.ID_SHOPKEEPER,
-            pageNumber = currentPage,
-            pageSize = pageSizeLoadMore,
-            search = "",
-            sortColumn = "",
-            sortDirection = "",
-            stateId = selectedStatePosition,
-            districtId = selectedDistrictPosition,
-            batchReady = false,
-            needLoad = false,
-            goingForLoad = false
-        )
+        val request = buildUserListRequest(userId, currentPage, pageSizeLoadMore)
 
-        val call = ApiClient.retrofit
-            .create(ApiService::class.java)
-            .getUserList(request)
+        val call = ApiClient.retrofit.create(ApiService::class.java).getUserList(request)
 
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
                 isLoading = false
+                personAdapter.showLoadingFooter(false)
+
                 if (response.isSuccess) {
                     val fetchedUsers = response.item.items
-                    if (fetchedUsers.isEmpty()) {
-                        isLastPage = true
+                    if (fetchedUsers.isNotEmpty()) {
+                        val mappedUsers = fetchedUsers.map { user -> mapUser(user) }
+                        userList_1.addAll(mappedUsers)
+                        personAdapter.appendList(mappedUsers)
+
+                        isLastPage = fetchedUsers.size < pageSizeLoadMore
                     } else {
-                        for (user in fetchedUsers) {
-                            val status = if (user.needLoad) "Status: Need Load" else "Status: No Need"
-                            val color = if (user.batchReady) "green" else "orange"
-
-                            val userModel = UserModel(
-                                role = UserRoles.getRoleNameById(user.roleID) ?: "Unknown",
-                                name = user.name ?: "No Name",
-                                detail = "Mobile: ${user.mobileNumber}",
-                                detail2 = "Property: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
-                                status = status,
-                                colorTemp = color
-                            )
-                            userList_1.add(userModel)
-                        }
-
-                        personAdapter.notifyDataSetChanged()
+                        isLastPage = true
                     }
                 }
             },
             onFailure = { error ->
                 isLoading = false
+                personAdapter.showLoadingFooter(false)
                 Log.e("Pagination", "Error: $error")
             }
         )
     }
+
+    private fun mapUser(user: UserItematList): UserModel {
+
+        val roleId = user.roleID
+        val isFarmer = roleId == UserRoles.ID_FARMER
+        val isShopkeeper = roleId == UserRoles.ID_SHOPKEEPER
+
+        val (status, color) = when {
+            user.needLoad && user.goingForLoad -> {
+                if (isFarmer) {
+                    "Status: Need Load" to "green"
+                } else if (isShopkeeper) {
+                    "Status: Going For Load" to "green"
+                } else {
+                    "Status: Need Load & Going For Load" to "green" // fallback
+                }
+            }
+
+            user.needLoad -> "Status: Need Load" to "green"
+            user.goingForLoad -> "Status: Going For Load" to "green"
+            user.batchReady -> "Status: Batch Ready" to "green"
+            else -> "Status: Batch not Ready" to "orange"
+        }
+        return UserModel(
+            role = getRoleName(user.roleID) ?: "Unknown",
+            name = user.name ?: "No Name",
+            detail = "Mobile: ${user.mobileNumber}",
+            detail2 = "Farm Name: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
+            status = status,
+            colorTemp = color,
+            batchReady = user.batchReady,
+            needLoad = user.needLoad,
+            goingForLoad = user.goingForLoad,
+            batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
+            needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
+            goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime,
+            stateID = user.stateID,
+            districtID = user.districtID,
+            henCount = user.henCount,
+            henWeight = user.henWeight,
+            longitude = user.longitude,
+            latitude = user.latitude,
+            propertyList = user.propertyList ?: emptyList()   // 👈 pass it properly
+
+
+        )
+    }
+
+    private fun buildUserListRequest(
+        userId: String?,
+        pageNumber: Int,
+        pageSize: Int
+    ): GetUserList {
+        val query = searchView.query.toString().trim().lowercase()
+
+        var batchReady = false
+        var needLoad = false
+        var goingForLoad = false
+        var search = ""
+
+        when (query) {
+            "batchready" -> batchReady = true
+            "needload" -> needLoad = true
+            "goingforload" -> goingForLoad = true
+            else -> {
+                if (query.length >= searchCharLimit) {
+                    search = query
+                }
+            }
+        }
+
+        return GetUserList(
+            userId = userId ?: "",
+            roleId = UserRoles.ID_FARMER,
+            pageNumber = pageNumber,
+            pageSize = pageSize,
+            search = search,
+            sortColumn = "",
+            sortDirection = "",
+            stateId = selectedStatePosition,
+            districtId = selectedDistrictPosition,
+            batchReady = batchReady,
+            needLoad = needLoad,
+            goingForLoad = goingForLoad
+        )
+    }
+
+    private fun hideKeyboard(view: View) {
+        val imm =
+            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
 }

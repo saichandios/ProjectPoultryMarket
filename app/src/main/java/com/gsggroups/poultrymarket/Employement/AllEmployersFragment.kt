@@ -77,7 +77,7 @@ class AllEmployersFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
 //         Set up the adapter and handle the row click
-        personAdapter = RecyclerAdapter(employerList) { person ->
+        personAdapter = RecyclerAdapter(employerList,"AllEmployersFragment") { person ->
             val intent = Intent(requireActivity(), EmployeDetails::class.java).apply {
                 putExtra("name", person.name)
                 putExtra("role", person.roleID)

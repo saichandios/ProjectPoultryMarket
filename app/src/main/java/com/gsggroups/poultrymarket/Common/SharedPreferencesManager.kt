@@ -3,7 +3,9 @@ package com.gsggroups.poultrymarket.Common
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.gsggroups.poultrymarket.Model.UserItem
+import com.gsggroups.poultrymarket.Utils.Property
 
 object SharedPreferencesManager {
 
@@ -11,8 +13,15 @@ object SharedPreferencesManager {
     private const val PREFS_NAME = "UserPreferences"
     private const val KEY_USER_ROLE = "user_role"
     private const val KEY_USER_ID = "user_id"
+    private const val KEY_USER_NAME = "user_name"
+    private const val KEY_USER_FARM_NAME = "user_farm_name"
+    private const val KEY_USER_FARM_ADDR1 = "user_farm_addr1"
+    private const val KEY_USER_FARM_ADDR2 = "user_farm_addr2"
+    private const val KEY_STATE_ID = "state_id"
+    private const val KEY_DISTRICT_ID = "district_id"
     private const val KEY_ROLE_ID = "role_id"
     private const val KEY_PROPERTY_ID = "property_id"
+    private const val KEY_PROPERTY_LIST = "KEY_PROPERTY_LIST"
     private const val KEY_SIGN_IN = "KEY_SIGN_IN"
     private const val KEY_RATES = "KEY_RATES"
     private const val KEY_TIME = "KEY_TIME"
@@ -20,17 +29,33 @@ object SharedPreferencesManager {
     private const val KEY_PIN_LOGIN = "KEY_PIN"
     private const val LAST_SUBMIT_TIMESTAMP_BATCH = "last_submit_timestamp_BatchReady"
     private const val KEY_HEN_COUNT = "hencount_BatchReady"
-    private const val KEY_HEN_COUNT_NEED="hencount_NeedLoad"
-    private const val KEY_HEN_COUNT_GOING="hencount_GoingForLoad"
+    private const val KEY_HEN_COUNT_NEED = "hencount_NeedLoad"
+    private const val KEY_HEN_COUNT_GOING = "hencount_GoingForLoad"
     private const val KEY_HEN_SIZE_BATCH = "hensize_BatchReady"
     private const val KEY_HEN_SIZE_NEED = "hensize_NeedLoad"
     private const val KEY_HEN_SIZE_GOING = "hensize_GoingForLoad"
     private const val LAST_SUBMIT_TIMESTAMP_NEEDLOAD = "last_submit_timestamp_NeedLoad"
     private const val LAST_SUBMIT_TIMESTAMP_GOINGLOAD = "last_submit_timestamp_GoingForLoad"
     private const val KEY_SUBMIT_PENDING = "KEY_SUBMIT_PENDING"
-    private const val KEY_LOGIN_BATCH= "KEY_LOGIN_BOOL"
-    private const val KEY_LOGIN_NEED= "KEY_LOGIN_BOOL"
-    private const val KEY_LOGIN_GOING= "KEY_LOGIN_GOING"
+    private const val KEY_LOGIN_BATCH = "KEY_LOGIN_BATCH"
+    private const val KEY_LOGIN_NEED = "KEY_LOGIN_NEED"
+    private const val KEY_LOGIN_GOING = "KEY_LOGIN_GOING"
+
+
+    fun getStateId(context: Context): Int =
+        getPreferences(context).getInt(KEY_STATE_ID, 0)
+
+    fun getDistrictId(context: Context): Int =
+        getPreferences(context).getInt(KEY_DISTRICT_ID, 0)
+
+    fun saveStateId(context: Context, stateId: Int) {
+        val prefs = getPreferences(context)
+        prefs.edit().putInt(KEY_STATE_ID, stateId).apply()
+    }
+    fun saveDistrictId(context: Context, distrctId: Int) {
+        val prefs = getPreferences(context)
+        prefs.edit().putInt(KEY_DISTRICT_ID, distrctId).apply()
+    }
 
     fun saveLastSubmitTimeBatch(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
@@ -40,6 +65,7 @@ object SharedPreferencesManager {
     fun getLastSubmitTimeBatch(context: Context): String? {
         return getPreferences(context).getString(LAST_SUBMIT_TIMESTAMP_BATCH, null)
     }
+
     fun saveLoginMobileNUmber(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_MOBILINUMBER_LOGIN, timestamp).apply()
@@ -48,6 +74,7 @@ object SharedPreferencesManager {
     fun getLoginMobileNumber(context: Context): String? {
         return getPreferences(context).getString(KEY_MOBILINUMBER_LOGIN, null)
     }
+
     fun saveLoginPIN(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_PIN_LOGIN, timestamp).apply()
@@ -56,6 +83,7 @@ object SharedPreferencesManager {
     fun getLoginPIN(context: Context): String? {
         return getPreferences(context).getString(KEY_PIN_LOGIN, null)
     }
+
     fun saveHenCountSubmit(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_COUNT, timestamp).apply()
@@ -64,6 +92,7 @@ object SharedPreferencesManager {
     fun getHenCountSubmit(context: Context): String? {
         return getPreferences(context).getString(KEY_HEN_COUNT, null)
     }
+
     fun saveHenCountSubmitNeed(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_COUNT_NEED, timestamp).apply()
@@ -86,24 +115,29 @@ object SharedPreferencesManager {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_SIZE_NEED, timestamp).apply()
     }
+
     fun clearLastSubmitHensize(context: Context) {
         getPreferences(context).edit().remove(KEY_HEN_SIZE_BATCH).apply()
     }
+
     fun clearLastSubmitHencount(context: Context) {
         getPreferences(context).edit().remove(KEY_HEN_COUNT_NEED).apply()
     }
+
     fun getHenSizeSubmitBatch(context: Context): String? {
-        return getPreferences(context).getString(KEY_HEN_SIZE_NEED, null)
+        return getPreferences(context).getString(KEY_HEN_SIZE_BATCH, null)
     }
+
     fun saveHenSizeSubmitBatch(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_SIZE_BATCH, timestamp).apply()
     }
 
     fun getHenSizeSubmitNeed(context: Context): String? {
-        return getPreferences(context).getString(KEY_HEN_SIZE_BATCH, null)
+        return getPreferences(context).getString(KEY_HEN_SIZE_NEED, null)
     }
-  fun saveHenSizeSubmitGoing(context: Context, timestamp: String) {
+
+    fun saveHenSizeSubmitGoing(context: Context, timestamp: String) {
         val prefs = getPreferences(context)
         prefs.edit().putString(KEY_HEN_SIZE_GOING, timestamp).apply()
     }
@@ -120,6 +154,7 @@ object SharedPreferencesManager {
     fun getBatchBoolean(context: Context): Boolean {
         return getPreferences(context).getBoolean(KEY_LOGIN_BATCH, false)
     }
+
     fun saveNeedBoolean(context: Context, pending: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_LOGIN_NEED, pending).apply()
     }
@@ -128,6 +163,7 @@ object SharedPreferencesManager {
     fun getNeedBoolean(context: Context): Boolean {
         return getPreferences(context).getBoolean(KEY_LOGIN_NEED, false)
     }
+
     fun saveGoingBoolean(context: Context, pending: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_LOGIN_GOING, pending).apply()
     }
@@ -139,6 +175,18 @@ object SharedPreferencesManager {
 
 
     fun clearLastSubmitTimeBatch(context: Context) {
+        getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
+    }
+
+    fun clearhenCount(context: Context) {
+        getPreferences(context).edit().remove(KEY_HEN_COUNT).clear()
+    }
+
+    fun clearHenSize(context: Context) {
+        getPreferences(context).edit().remove(KEY_HEN_SIZE_BATCH).clear()
+    }
+
+    fun clearBatchBoolean(context: Context) {
         getPreferences(context).edit().remove(LAST_SUBMIT_TIMESTAMP_BATCH).apply()
     }
 
@@ -209,6 +257,49 @@ object SharedPreferencesManager {
         return getPreferences(context).getString(KEY_USER_ID, null)
     }
 
+    fun saveUserName(context: Context, role: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_USER_NAME, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getUserName(context: Context): String? {
+        return getPreferences(context).getString(KEY_USER_NAME, null)
+    }
+
+    fun saveUserForm(context: Context, role: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_USER_FARM_NAME, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getUserForm(context: Context): String? {
+        return getPreferences(context).getString(KEY_USER_FARM_NAME, null)
+    }
+
+    fun saveUserFormAddress1(context: Context, role: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_USER_FARM_ADDR1, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getUserFormAdress1(context: Context): String? {
+        return getPreferences(context).getString(KEY_USER_FARM_ADDR1, null)
+    }
+    fun saveUserFormAddress2(context: Context, role: String) {
+        val editor = getPreferences(context).edit()
+        editor.putString(KEY_USER_FARM_ADDR2, role)
+        editor.apply()
+    }
+
+    // Retrieve the saved user role
+    fun getUserFormAdress2(context: Context): String? {
+        return getPreferences(context).getString(KEY_USER_FARM_ADDR2, null)
+    }
+
     // Save roll_id in SharedPreferences
     fun saveRoleID(context: Context, role: Int) {
         val editor = getPreferences(context).edit()
@@ -232,6 +323,23 @@ object SharedPreferencesManager {
     fun getPropertyId(context: Context): String? {
         return getPreferences(context).getString(KEY_PROPERTY_ID, "")
     }
+
+    // Save property list
+    fun savePropertyList(context: Context, properties: List<Property>) {
+        val gson = Gson()
+        val json = gson.toJson(properties)
+        val editor = getPreferences(context).edit()
+        editor.putString("KEY_PROPERTY_LIST", json)
+        editor.apply()
+    }
+
+    // Retrieve property list
+    fun getPropertyList(context: Context): List<Property> {
+        val json = getPreferences(context).getString(KEY_PROPERTY_LIST, null) ?: return emptyList()
+        val type = object : TypeToken<List<Property>>() {}.type
+        return Gson().fromJson(json, type)
+    }
+
 
     // Save user role in SharedPreferences
     fun saveRatesCard(context: Context, role: String) {
@@ -295,8 +403,15 @@ object SharedPreferencesManager {
         val editor = getPreferences(context).edit()
         editor.putString(KEY_TIME, batchReadyUpdatedDateTime).apply()
     }
-    fun getLastSubmissionTime(context: Context): String ?{
+
+    fun getLastSubmissionTime(context: Context): String? {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPreferences.getString(KEY_TIME, null)
     }
+
+    fun clearAll(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+    }
+
 }

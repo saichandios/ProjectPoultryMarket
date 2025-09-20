@@ -10,6 +10,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
+import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.DashboardView.FarmerFragment
 import com.gsggroups.poultrymarket.DashboardView.PageAdapter
 import com.gsggroups.poultrymarket.DashboardView.ShopkeeperFragment
@@ -146,5 +147,11 @@ class TablayoutFragment : Fragment() {
                 }
             }
     }
+    override fun onResume() {
+        super.onResume()
+
+        (activity as? Dashboard)?.onFragmentOpened()
+    }
+
 
 }
