@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
@@ -20,7 +21,9 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.firestore.auth.User
 import com.gsggroups.poultrymarket.BatchReadyFragment
 import com.gsggroups.poultrymarket.ChickenRatesFragment
 import com.gsggroups.poultrymarket.Common.ApiHelper
@@ -43,6 +46,8 @@ import com.gsggroups.poultrymarket.UserInfo
 import com.gsggroups.poultrymarket.Utils.ApiService
 import com.gsggroups.poultrymarket.base.ApiClient
 import com.gsggroups.poultrymarket.databinding.ActivityDashboardBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class Dashboard : AppCompatActivity() {
@@ -69,6 +74,8 @@ class Dashboard : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val batchvalue= SharedPreferencesManager.getBatchBoolean(this)
+        Log.e("Dashboard","Batch value at dash: $batchvalue")
 
         // Initialize DrawerLayout and NavigationView
         drawerLayout = binding.drawerLayout
@@ -77,9 +84,6 @@ class Dashboard : AppCompatActivity() {
         userRoleName = UserRoles.getRoleNameById(userRoleId).toString()
 
         loader = LoaderUtils(this)
-        if (!loginCalled) {
-            getLoadData()
-        }
 
         loader.show()
         Handler(Looper.getMainLooper()).postDelayed({
@@ -103,8 +107,7 @@ class Dashboard : AppCompatActivity() {
             handleNavigationItemSelected(menuItem)
             true
         }
-
-        val menu = navView.menu
+    val menu = navView.menu
         val navBatchReadyItem: MenuItem = menu.findItem(R.id.nav_BatchReady)
         if (userRoleName == UserRoles.ROLE_FARMER) {
             navBatchReadyItem.title = "Batch Ready"
@@ -128,11 +131,22 @@ class Dashboard : AppCompatActivity() {
         }
 
         //------------------------------------------------
+
+        val profileImage = when (userRoleName) {
+            UserRoles.ROLE_FARMER -> ContextCompat.getDrawable(this, R.drawable.animal)
+            UserRoles.ROLE_TRADER -> ContextCompat.getDrawable(this, R.drawable.trader)
+            UserRoles.ROLE_SHOPKEEPER -> ContextCompat.getDrawable(this, R.drawable.shopkeeper)
+            else -> ContextCompat.getDrawable(this, R.drawable.profile_side) // default
+        }
+
         val userInfoLayout = UserInfo(this)
         userInfoLayout.updateUserInfo(
-            userName = "User 1",
-            userEmail = "1234567890",
-            userImage = ContextCompat.getDrawable(this, R.drawable.profile_side),
+
+            userName = ""+SharedPreferencesManager.getUserName(this),
+            userEmail = ""+SharedPreferencesManager.getLoginMobileNumber(this),
+            userImage = profileImage
+            // 👇 IMAGE HANDLING BASED ON FRAGMENT
+
         )
         userInfoLayout.view.setPadding(30, 20, 0, 0)
         navView.addHeaderView(userInfoLayout.view)
@@ -180,59 +194,6 @@ class Dashboard : AppCompatActivity() {
             }
         }
 
-       /* if (userRoleId == UserRoles.ID_FARMER) {
-            sharedViewModel.batchReady.observe(this) { isReady ->
-                load_switch.isChecked = isReady
-                load_textView.setTextColor(if (isReady) Color.parseColor("#006400") else Color.RED)
-
-            }
-            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeBatch(this)
-            val hasValue = !lastSubmitTime.isNullOrEmpty() && lastSubmitTime != "0"&&lastSubmitTime != "null"
-
-            load_switch.isChecked = hasValue
-            load_switch.isEnabled = !hasValue
-
-        } else if (userRoleId == UserRoles.ID_TRADER) {
-            sharedViewModel.needLoad.observe(this) { isNeeded ->
-                load_switch.isChecked = isNeeded
-                load_textView.setTextColor(
-                    if (isNeeded) Color.parseColor("#006400") else Color.RED
-                )
-                load_switch.isEnabled = !isNeeded
-            }
-
-
-            val submitPending = SharedPreferencesManager.isSubmitPending(this)
-
-            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeNeed(this)
-            val hasValue = !lastSubmitTime.isNullOrEmpty() && lastSubmitTime != "0"&&lastSubmitTime != "null"
-
-            load_switch.isChecked = hasValue
-            load_switch.isEnabled = !hasValue
-
-            val lastSubmitTimeGoing = SharedPreferencesManager.getLastSubmitTimeGoing(this)
-            val hasGoingValue = !lastSubmitTimeGoing.isNullOrEmpty() && lastSubmitTimeGoing != "0"&&lastSubmitTimeGoing != "null"
-
-            going_switch.isChecked = hasGoingValue
-            going_switch.isEnabled = !hasGoingValue&&!submitPending
-            sharedViewModel.goingForLoad.observe(this) { isGoing ->
-                going_switch.isChecked = isGoing
-                going_textView.setTextColor(
-                    if (isGoing) Color.parseColor("#006400") else Color.RED
-                )
-                going_switch.isEnabled = !isGoing
-            }
-        } else if (userRoleId == UserRoles.ID_SHOPKEEPER) {
-            sharedViewModel.needLoad.observe(this) { isNeeded ->
-                load_switch.isChecked = isNeeded
-            }
-            val lastSubmitTime = SharedPreferencesManager.getLastSubmitTimeNeed(this)
-            val hasValue = !lastSubmitTime.isNullOrEmpty() && lastSubmitTime != "0"&&lastSubmitTime != "null"
-
-            load_switch.isChecked = hasValue
-            load_switch.isEnabled = !hasValue
-        }
-*/
         // Set initial text color based on the default state of the switch
         load_textView.setTextColor(
             if (load_switch.isChecked) {
@@ -249,6 +210,7 @@ class Dashboard : AppCompatActivity() {
                 load_textView.setTextColor(Color.parseColor("#006400"))
                 load_textView.setTypeface(null, Typeface.BOLD)
                 loadFragment(BatchReadyFragment())
+                load_switch.isEnabled=false
                 highlightMenuItem(R.id.nav_BatchReady)
             } else {
                 load_textView.setTextColor(Color.RED)
@@ -270,6 +232,7 @@ class Dashboard : AppCompatActivity() {
                 going_textView.setTextColor(Color.parseColor("#006400"))
                 going_textView.setTypeface(null, Typeface.BOLD)
                 loadFragment(GoingForLoadFragment())
+                going_switch.isEnabled = false
                 highlightMenuItem(R.id.nav_GoingForLoad)
             } else {
                 going_textView.setTextColor(Color.RED)
@@ -409,6 +372,7 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun highlightMenuItem(menuItemId: Int) {
+
         navView.menu.findItem(menuItemId).isChecked = true
     }
 
@@ -435,9 +399,7 @@ class Dashboard : AppCompatActivity() {
                 val intent = Intent(this, Login::class.java)
                 intent.flags =
                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the back stack
-                SharedPreferencesManager.clearSignedIn(this)
-                SharedPreferencesManager.clearUserRole(this)
-                SharedPreferencesManager.clearRoleId(this)
+                SharedPreferencesManager.clearAll(this)
                 startActivity(intent)
                 return
             }
@@ -501,9 +463,7 @@ class Dashboard : AppCompatActivity() {
     }
 
     fun loginUser(mobile: String, pin: String) {
-        loader = LoaderUtils(this)
 
-        loader.show()
         loginCalled = true
 
         val loginRequest = LoginRequest(
@@ -523,7 +483,7 @@ class Dashboard : AppCompatActivity() {
                 if (response.isSuccess) {
                     val userDetails = response.item.userID  // This gets the UserDetails object
                     val userPropertId =
-                        response.item.properties[0].propertyID  // This gets the UserDetails object
+                        response.item.propertyList[0].propertyID  // This gets the UserDetails object
                     val roleIDfromLogin = response.item.roleID  // This gets the UserDetails object
                     val batchReadyUpdatedDateTime = response.item.batchReadyUpdatedDateTime
                     val needLoadUpdatedDateTime = response.item.needLoadUpdatedDateTime
@@ -531,42 +491,33 @@ class Dashboard : AppCompatActivity() {
                     val batchReadyBool = response.item.batchReady
                     val needLoadBool = response.item.needLoad
                     val goingForLoad = response.item.goingForLoad
-
-//                    if (userPropertList.isNotEmpty()) {
-//                        val firstPropertyId = userPropertList[0].propertyID
-//                        SharedPreferencesManager.savePropertyID(this, firstPropertyId)                    }
-//                    val userId = userDetails.userID
-//                    val roleId = userDetails.roleID
-//                    Log.d("Login", "User ID: $userId")
-
-                    //       intent.putExtra("getUserRequest", Gson().toJson(getUserListRequest))
                     SharedPreferencesManager.saveUserID(this, userDetails)
                     SharedPreferencesManager.saveRoleID(this, roleIDfromLogin)
+                    SharedPreferencesManager.saveHenCountSubmit(this, ""+response.item.henCount)
+                    SharedPreferencesManager.saveHenSizeSubmitBatch(this, ""+response.item.henWeight)
                     SharedPreferencesManager.savePropertyID(this, userPropertId)
+                    SharedPreferencesManager.saveStateId(this, response.item.stateID)
+                    SharedPreferencesManager.saveDistrictId(this, response.item.districtID)
                     SharedPreferencesManager.saveSignedIn(this, true)
-                    if (batchReadyBool && !batchReadyUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeBatch(this, batchReadyUpdatedDateTime)
-                    } else {
-                        SharedPreferencesManager.clearLastSubmitTimeBatch(this) // use clear instead of "0"
-                    }
+                    SharedPreferencesManager.savePropertyList(this, response.item.propertyList)
+                    SharedPreferencesManager.saveUserName(this, response.item.name)
+                    SharedPreferencesManager.saveUserForm(this, response.item.propertyList[0].propertyName)
+                    SharedPreferencesManager.saveUserFormAddress1(this, response.item.propertyList[0].address1)
+                    SharedPreferencesManager.saveUserFormAddress2(this, response.item.propertyList[0].address2)
+                    SharedPreferencesManager.saveHenCountSubmitGoing(
+                        this,
+                        "" + response.item.henCount
+                    )
+                    SharedPreferencesManager.saveHenSizeSubmitGoing(
+                        this,
+                        "" + response.item.henWeight
+                    )
+                        SharedPreferencesManager.saveBatchBoolean(this, batchReadyBool)
+                        SharedPreferencesManager.saveNeedBoolean(this, needLoadBool)
+                        SharedPreferencesManager.saveGoingBoolean(this, goingForLoad)
 
-                    if (needLoadBool && !needLoadUpdatedDateTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeNeed(this, needLoadUpdatedDateTime)
-                    } else {
-                        SharedPreferencesManager.clearLastSubmitTimeNeed(this)
-                    }
-
-                    if (goingForLoad && !goingForLoadUpdatedTime.isNullOrEmpty()) {
-                        SharedPreferencesManager.saveLastSubmitTimeGoing(this, goingForLoadUpdatedTime)
-                    } else {
-                        SharedPreferencesManager.clearLastSubmitTimeGoing(this)
-                    }
-
-                    loader.hide()
                 } else {
-                    loader.hide()
 
-                    Toast.makeText(this, response.message, Toast.LENGTH_SHORT).show()
                 }
             },
             onFailure = { error ->
@@ -599,6 +550,7 @@ class Dashboard : AppCompatActivity() {
 
         } else if (userRoleId == UserRoles.ID_SHOPKEEPER) {
             val needLoad = SharedPreferencesManager.getNeedBoolean(this)
+
             load_switch.isChecked = needLoad
             load_switch.isEnabled = !needLoad
         }
@@ -612,19 +564,63 @@ class Dashboard : AppCompatActivity() {
         super.onResume()
         refreshSwitchStates()
     }
-    fun updateBatchReadySwitch(isActive: Boolean) {
-        load_switch.isChecked = isActive
-        load_switch.isEnabled = !isActive
-        load_textView.setTextColor(if (isActive) Color.parseColor("#006400") else Color.RED)
-        load_switch.setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
+    fun updateBatchReadySwitch(force: Boolean?,isFromSameFragment:Boolean=false) {
+//        val ctx = this
+        val batchBool = SharedPreferencesManager.getBatchBoolean(this)
+        val henCount = SharedPreferencesManager.getHenCountSubmit(this).toString()
+        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(this)
+
+        val shouldOn = if (force != null||isFromSameFragment) {
+            force
+        } else {
+            batchBool && henCount !in listOf (null,"0") && !lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null"
+        }
+
+        if (shouldOn == true) {
+            load_switch.isChecked = true
+            load_switch.isEnabled = false
+            load_textView.setTextColor(Color.parseColor("#006400"))
+            load_textView.setTypeface(null, Typeface.BOLD)
+        } else {
+            load_switch.isChecked = false
+            load_switch.isEnabled = true
+            load_textView.setTextColor(Color.RED)
+            load_textView.setTypeface(null, Typeface.NORMAL)
+        }
+    }
+    fun updateGoingForLoadSwitch(force: Boolean?,isFromSameFragment:Boolean=false) {
+        val ctx = this
+        val batchBool = SharedPreferencesManager.getGoingBoolean(ctx)
+        val lastSubmit = SharedPreferencesManager.getLastSubmitTimeBatch(ctx)
+
+        val shouldOn = if (force != null||isFromSameFragment) {
+            force
+        } else {
+            batchBool && !lastSubmit.isNullOrEmpty() && lastSubmit != "0" && lastSubmit != "null"
+        }
+
+        if (shouldOn == true) {
+            going_switch.isChecked = true
+            going_switch.isEnabled = false
+            going_textView.setTextColor(Color.parseColor("#006400"))
+            going_switch.setTypeface(null, Typeface.BOLD)
+        } else {
+            going_switch.isChecked = false
+            going_switch.isEnabled = true
+            going_textView.setTextColor(Color.RED)
+            going_switch.setTypeface(null, Typeface.NORMAL)
+        }
     }
 
-    fun updateNeedLoadSwitch(isActive: Boolean) {
-        load_switch.isChecked = isActive
-        load_switch.isEnabled = !isActive
-        load_textView.setTextColor(if (isActive) Color.parseColor("#006400") else Color.RED)
-        load_switch.setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
+    fun onFragmentOpened() {
+        lifecycleScope.launch(Dispatchers.IO) {
+                if (!loginCalled) {
+                    getLoadData()
+                }
+
+        }
     }
+
 
 }
 

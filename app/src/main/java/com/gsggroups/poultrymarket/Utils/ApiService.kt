@@ -1,6 +1,5 @@
 package com.gsggroups.poultrymarket.Utils
 
-import LoginResponse
 import com.gsggroups.poultrymarket.Model.GetUserList
 import com.gsggroups.poultrymarket.Model.ListResponseModel
 import retrofit2.Call
@@ -9,7 +8,7 @@ import retrofit2.http.POST
 
 interface ApiService {
     @POST("/registerUser")
-    fun registerUser(@Body request: Any): Call<ApiResponse<UserItem>>
+    fun registerUser(@Body request: Any): Call<ApiResponseNew<UserItem>>
 
 
     @POST("/loginUser")
@@ -24,11 +23,14 @@ interface ApiService {
     @POST("/batchReady")
     fun batchReady(@Body request: Any): Call<ApiResponse<Any>>
 
- @POST("/needLoad")
+    @POST("/needLoad")
     fun needLoad(@Body request: Any): Call<ApiResponse<Any>>
 
     @POST("/goingForLoad")
     fun goingForLoad(@Body request: Any): Call<ApiResponse<Any>>
+
+ @POST("/updateUser")
+    fun updateUserProfile(@Body request: Any): Call<ApiResponseNew<UserItem>>
 
     // Add other API methods here
 }

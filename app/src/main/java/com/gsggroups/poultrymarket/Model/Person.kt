@@ -27,7 +27,7 @@ data class UserDetails(
     val needLoad: Boolean,
     val goingForLoad: Boolean,
     val henCount: Int,
-    val henWeight: Int,
+    val henWeight: Float,
     val deviceToken: String,
     val isDeleted: Boolean,
     val createdDateTime: String,

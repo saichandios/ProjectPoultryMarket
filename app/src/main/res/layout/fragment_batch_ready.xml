@@ -1,149 +1,151 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp"
+    android:fillViewport="true"
     android:background="@color/bgColor">
 
-    <!-- Layout 1: Load Availability with Switch -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:background="@drawable/border_frame"
+        android:orientation="vertical"
         android:gravity="center"
-        android:layout_marginBottom="10dp"
-        android:visibility="gone">
+        android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Load Availability"
-            android:textSize="16sp"
-            android:textColor="#000"
-            android:id="@+id/load_available_text"/>
-
-        <Switch
-            android:id="@+id/load_available_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"/>
-
-    </LinearLayout>
-
-    <!-- Layout 2: Hen Count with EditText -->
-    <TextView
-        android:id="@+id/Batch_Ready_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Batch Ready"
-        android:textSize="16sp"
-        android:textColor="@color/bgButtonColor"
-        android:textStyle="bold"
-        android:layout_margin="8dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp"
-        android:background="@drawable/border_frame"
-        android:layout_marginBottom="10dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hen Count"
-            android:textSize="16sp"
-            android:textColor="#000"
-            android:layout_marginBottom="8dp"/>
-
-        <EditText
-            android:id="@+id/text_hen_count"
+        <!-- Layout 1: Load Availability with Switch -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter count"
-            android:inputType="number"
-            android:background="@android:drawable/edit_text"
-            android:padding="8dp"/>
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:background="@drawable/border_frame"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Load Availability"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:id="@+id/load_available_text"/>
 
-    <!-- Layout 3: Hen Size with Dropdown -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp"
-        android:background="@drawable/border_frame"
-        android:layout_marginBottom="10dp">
+            <Switch
+                android:id="@+id/load_available_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"/>
+        </LinearLayout>
 
+        <!-- Layout 2: Hen Count with EditText -->
         <TextView
+            android:id="@+id/Batch_Ready_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hen Size(Kgs)"
+            android:text="Batch Ready"
             android:textSize="16sp"
-            android:textColor="#000"
-            android:layout_marginBottom="8dp"/>
+            android:textColor="@color/bgButtonColor"
+            android:textStyle="bold"
+            android:layout_margin="8dp" />
 
-        <Spinner
-            android:id="@+id/hen_size_spinner"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:entries="@array/hen_size_values"
-            android:background="@drawable/border_spinner"
-            android:prompt="@string/select_hen_Size"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp"
-        android:background="@drawable/border_frame"
-        android:visibility="gone"
-        android:layout_marginBottom="10dp">
-
-        <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select Farm"
-            android:textSize="16sp"
-            android:textColor="#000"
-            android:layout_marginBottom="8dp"/>
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:background="@drawable/border_frame"
+            android:layout_marginBottom="10dp">
 
-        <Spinner
-            android:id="@+id/farm_spinner"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hen Count"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:layout_marginBottom="8dp"/>
+
+            <EditText
+                android:id="@+id/text_hen_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter count"
+                android:inputType="number"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:background="@android:drawable/edit_text"
+                android:padding="8dp"/>
+        </LinearLayout>
+
+        <!-- Layout 3: Hen Size with Dropdown -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:entries="@array/farm_values"
-            android:background="@drawable/border_spinner"
-            android:prompt="@string/select_farm"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:background="@drawable/border_frame"
+            android:layout_marginBottom="10dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hen Size(Kgs)"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:layout_marginBottom="8dp"/>
+
+            <Spinner
+                android:id="@+id/hen_size_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:entries="@array/hen_size_values"
+                android:background="@drawable/border_spinner"
+                android:prompt="@string/select_hen_Size"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:background="@drawable/border_frame"
+            android:visibility="gone"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Farm"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:layout_marginBottom="8dp"/>
+
+            <Spinner
+                android:id="@+id/farm_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:entries="@array/farm_values"
+                android:background="@drawable/border_spinner"
+                android:prompt="@string/select_farm"/>
+        </LinearLayout>
+
+        <!-- Submit Button -->
+        <Button
+            android:id="@+id/submit_button_batch_need"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Submit"
+            android:textSize="18sp"
+            android:backgroundTint="@color/bgButtonColor"
+            android:textColor="#FFFFFF"/>
+
+        <Button
+            android:id="@+id/completed_activate_all_button_batch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Completed, Activate All"
+            android:textSize="16sp"
+            android:backgroundTint="@color/bgButtonColor"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="10dp"/>
     </LinearLayout>
-
-    <!-- Submit Button -->
-    <Button
-        android:id="@+id/submit_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Submit"
-        android:textSize="18sp"
-        android:backgroundTint="@color/bgButtonColor"
-        android:textColor="#FFFFFF"/>
-
-    <Button
-        android:id="@+id/completed_activate_all_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Completed, Activate All"
-        android:textSize="16sp"
-        android:backgroundTint="@color/bgButtonColor"
-        android:textColor="#FFFFFF"
-        android:layout_marginTop="10dp"/>
-
-</LinearLayout>
+</ScrollView>

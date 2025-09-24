@@ -4,13 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
+    android:forceDarkAllowed="false"
     android:layout_height="match_parent"
     tools:context=".DashboardView.Dashboard">
 
     <!-- Main Content: ConstraintLayout with Toolbar, TabLayout, and ViewPager2 -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
 
       <!-- Toolbar with 4 buttons -->
         <LinearLayout
@@ -109,14 +112,16 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-
     <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        android:padding="10dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="35dp"
         app:menu="@menu/drawer_menu"
         app:itemTextColor="@color/black"
         app:itemIconTint="#FF0000"

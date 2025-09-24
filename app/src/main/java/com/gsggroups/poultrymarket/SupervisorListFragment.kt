@@ -80,7 +80,7 @@ class SupervisorListFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.setHasFixedSize(true)
         // Set up the adapter and handle the row click
-        personAdapter = RecyclerAdapter(userList) { person ->
+        personAdapter = RecyclerAdapter(userList,"SupervisorListFragment") { person ->
             val intent = Intent(context, EmployeDetails::class.java).apply {
                 putExtra("name", person.name)
                 putExtra("role", person.roleID)

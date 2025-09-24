@@ -6,11 +6,11 @@ import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -20,6 +20,7 @@ import android.widget.PopupWindow
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gsggroups.poultrymarket.Common.ApiHelper
@@ -30,8 +31,7 @@ import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.Employement.EmployeDetails
 import com.gsggroups.poultrymarket.Model.GetUserList
-import com.gsggroups.poultrymarket.Model.ListResponseModel
-import com.gsggroups.poultrymarket.Model.ListRoleRequest
+import com.gsggroups.poultrymarket.Model.UserItematList
 import com.gsggroups.poultrymarket.Model.UserModel
 import com.gsggroups.poultrymarket.R
 import com.gsggroups.poultrymarket.Utils.ApiService
@@ -57,18 +57,25 @@ class TraderFragment : Fragment() {
     private lateinit var searchView: SearchView
     private lateinit var stateSpinner: Spinner
     private lateinit var districtSpinner: Spinner
-    private lateinit var userList_1: ArrayList<UserModel>
+    private var userList_1 = ArrayList<UserModel>()
+    private val masterUserList = ArrayList<UserModel>()  // Full dataset for filtering
+
     var userRoleId: Int = 0
     var userRoleName: String = ""
     var selectedStatePosition = 0
     var selectedDistrictPosition = 0
     private lateinit var loader: LoaderUtils
+    private var searchRunnable: Runnable? = null
+    private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var initialUserList = ArrayList<UserModel>() // first loaded common list
 
     private var currentPage = 1
     private var isLoading = false
     private var isLastPage = false
-    private val pageSizeInitial = 20
+    private val pageSizeInitial = 10
     private val pageSizeLoadMore = 10
+    private val searchCharLimit = 1
+    var fromFilterClick: Boolean = false
 
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -112,11 +119,13 @@ class TraderFragment : Fragment() {
             ) {
                 // Store selected state position
                 selectedStatePosition = position
+                if (filterButton.text == "Clear") {
+                    filterButton.text = "Filter"
+                }
 
                 // Get the districts for this state
                 val selectedState = states[position]
                 val districts = DropDownManager.getDistrictsForState(selectedState)
-
                 // Set up district adapter
                 val districtAdapter = ArrayAdapter(
                     requireContext(), android.R.layout.simple_spinner_item, districts
@@ -126,10 +135,14 @@ class TraderFragment : Fragment() {
                 districtSpinner.adapter = districtAdapter
 
                 // Reset district position
-                selectedDistrictPosition = -1
+                selectedDistrictPosition = 1
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                selectedStatePosition = 0
+                selectedDistrictPosition = 0
+
+            }
         }
 
 // District selection listener
@@ -137,11 +150,22 @@ class TraderFragment : Fragment() {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
+                if (selectedStatePosition == 0) {
+                    selectedDistrictPosition = 0
+                } else {
+                    selectedDistrictPosition = position + 1
+
+                }
                 // Store district position
-                selectedDistrictPosition = position
+                if (filterButton.text == "Clear") {
+                    filterButton.text = "Filter"
+                }
+
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+            override fun onNothingSelected(parent: AdapterView<*>) {
+
+            }
         }
     }
 
@@ -182,24 +206,62 @@ class TraderFragment : Fragment() {
         setupDropDown()
 
         val userId = SharedPreferencesManager.getUserId(requireContext())
-        getUserList(userId)
 
         userList_1 = ArrayList()
         // Set up the adapter and handle the row click
-        personAdapter = RecyclerAdapter(userList_1) { person ->
+        personAdapter = RecyclerAdapter(userList_1, "TraderFragment") { person ->
+/*
             val intent = Intent(context, EmployeDetails::class.java).apply {
+                putExtra("userID", person.userID)
                 putExtra("name", person.name)
-                putExtra("role", person.role)
-                putExtra("detail", person.detail)
+                putExtra("role", person.mobileNumber)
+                putExtra("detail", person.status)
+                putExtra("detail2", person.propertyList[])
+                putExtra("status", person.status)
+                putExtra("mobileNumber", person.mobileNumber)
+                putExtra("henCount", person.henCount)
+                putExtra("henWeight", person.henWeight)
             }
+*/
+            val intent = Intent(requireContext(), EmployeDetails::class.java).apply {
+                putExtra("user_data", person)
+                putExtra("source", "Trader")
+            }
+
             startActivity(intent)
         }
-
+        recyclerView.adapter = personAdapter
         setupSearchView()
+        getUserList(userId)
 
         filterButton.setOnClickListener {
             val userId = SharedPreferencesManager.getUserId(requireContext())
-            getUserList(userId)
+            if (filterButton.text == "Clear") {
+                // Reset spinners and reload default list
+                stateSpinner.setSelection(0)
+                districtSpinner.setSelection(0)
+                selectedStatePosition = 0
+                selectedDistrictPosition = 0
+
+//                getUserList(userId, reset = true)
+                filterButton.text = "Filter"
+                searchView.setQuery("", false)
+                fromFilterClick=false
+            } else {
+                fromFilterClick=true
+                if (stateSpinner.selectedItemPosition == 0) {
+                    selectedDistrictPosition = 0
+                    selectedStatePosition = 0
+                } else {
+                    selectedDistrictPosition = districtSpinner.selectedItemPosition + 1
+                    selectedStatePosition = stateSpinner.selectedItemPosition
+                }
+                // Apply filter
+                getUserList(userId, reset = true)
+                // ✅ Change button text to Clear
+                filterButton.text = "Clear"
+            }
+
         }
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -213,9 +275,10 @@ class TraderFragment : Fragment() {
 
                 if (!isLoading && !isLastPage) {
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                        && firstVisibleItemPosition >= 0
-                        && totalItemCount >= pageSizeLoadMore
+                    //     && firstVisibleItemPosition >= 0
+                    //   && totalItemCount >= pageSizeLoadMore
                     ) {
+                        personAdapter.showLoadingFooter(true)
                         loadMoreItems()
                     }
                 }
@@ -223,42 +286,84 @@ class TraderFragment : Fragment() {
         })
     }
 
-//    private fun setupSearchView() {
-//        // Ensure the SearchView is expanded by default and shows typing interface
-//        searchView.setIconifiedByDefault(false)
-//
-//        // Set up listener for text changes in SearchView
-//        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?): Boolean {
-//                return false
-//            }
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                personAdapter.filter(newText ?: "")
-//                return true
-//            }
-//        })
-//    }
-
     private fun setupSearchView() {
         searchView.setIconifiedByDefault(false)
-
-        // Listen for query text changes
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
+                val userId = SharedPreferencesManager.getUserId(requireContext())
+                if (!query.isNullOrBlank()) {
+                    val q = query.trim().lowercase()
+                    if (q.length >= searchCharLimit || q == "batchready" || q == "needload" || q == "goingforload") {
+                        getUserList(userId, reset = true) //
+                    }
+                }
+                hideKeyboard(searchView)
+                searchView.clearFocus()
+
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                personAdapter.filter(newText ?: "")
+                searchRunnable?.let { searchHandler.removeCallbacks(it) }
+
+                searchRunnable = Runnable {
+                    val query = newText?.trim()?.lowercase() ?: ""
+                    val userId = SharedPreferencesManager.getUserId(requireContext())
+
+                    when {
+                    /*    query.isEmpty() -> {
+                            // Reset to initial state (API call)
+                            getUserList(userId, reset = true)
+                            // Do NOT hide keyboard here, let user keep typing
+                        }
+
+                        query == "batchready" || query == "needload" || query == "goingforload" -> {
+                            getUserList(userId, reset = true)
+                            // Keep keyboard open
+                        }
+
+                        query.length == 4 || query.length == 7 -> {
+                            // Auto API call at length 4 or 7
+                            getUserList(userId, reset = true)
+                            // Do NOT hide keyboard here, let user continue typing
+                        }
+
+                        query.length >= 1 -> {
+                            // Local filter only
+                            personAdapter.filter(newText ?: "")
+                        }
+
+                        else -> {
+                            // If nothing matches, clear list
+                            personAdapter.updateList(arrayListOf())
+                        }*/
+                        query.isEmpty() -> {
+                            getUserList(userId, reset = true)                        }
+
+                        query == "batchready" || query == "needload" || query == "goingforload" -> {
+                            getUserList(userId, reset = true)   // API call
+                        }
+
+                        query.length == 4 || query.length == 7 -> {
+                            getUserList(userId, reset = true)   // API call
+                        }
+
+                        query.length >= 1 -> {
+                            filterLocally(query)   // purely local
+                        }
+                    }
+                }
+
+                searchHandler.postDelayed(searchRunnable!!, 500)
                 return true
             }
+
         })
 
-        // Add touch listener to detect drawable (e.g., right icon) click
-        val searchEditText = searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
+        val searchEditText =
+            searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
         searchEditText.setOnTouchListener { v, event ->
-            val drawableEnd = searchEditText.compoundDrawables[2] // Right drawable
+            val drawableEnd = searchEditText.compoundDrawables[2]
             if (drawableEnd != null && event.action == MotionEvent.ACTION_UP) {
                 val drawableWidth = drawableEnd.bounds.width()
                 if (event.rawX >= (searchEditText.right - drawableWidth)) {
@@ -269,17 +374,28 @@ class TraderFragment : Fragment() {
             false
         }
 
-        // Show popup when SearchView is clicked
         searchView.setOnClickListener {
             showHistoryPopup(searchView)
         }
 
-        // Also optional: Show popup when SearchView gains focus (in case user taps into the field)
         searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 showHistoryPopup(searchView)
             }
         }
+    }
+    private fun filterLocally(query: String) {
+        if (query.isEmpty()) {
+            personAdapter.updateList(ArrayList(masterUserList)) // show all
+            return
+        }
+
+        val filtered = masterUserList.filter {
+            it.name.contains(query, ignoreCase = true) ||
+                    it.detail.contains(query, ignoreCase = true) ||
+                    it.detail2.contains(query, ignoreCase = true)
+        }
+        personAdapter.updateList(ArrayList(filtered))
     }
 
     private fun showHistoryPopup(anchor: View) {
@@ -313,6 +429,13 @@ class TraderFragment : Fragment() {
 //        }
         itemBatchReady.visibility = View.GONE
 
+        if (userRoleId == UserRoles.ID_FARMER) {
+            itemNeedLoad.visibility = View.VISIBLE
+            itemGoingForLoad.visibility = View.GONE
+        } else if (userRoleId == UserRoles.ID_SHOPKEEPER) {
+            itemNeedLoad.visibility = View.GONE
+            itemGoingForLoad.visibility = View.VISIBLE
+        }
         itemNeedLoad.setOnClickListener {
             val query = "needload"
             searchView.setQuery(query, false)
@@ -328,92 +451,64 @@ class TraderFragment : Fragment() {
         }
     }
 
-    private fun getUserList( userId: String?) {
-          loader.show()
-        userList_1 = ArrayList()
+    private fun getUserList(userId: String?, reset: Boolean = true) {
+        if (reset) {
+            currentPage = 1
+            isLastPage = false
+            userList_1.clear()
+            personAdapter.updateList(arrayListOf()) // clear
+            masterUserList.clear()
 
-        val request = GetUserList(
-            userId = userId ?: "",
-            roleId = UserRoles.ID_TRADER,
-            pageNumber = 1,
-            pageSize = 20,
-            search = searchView.query.toString(),
-            sortColumn = "",
-            sortDirection = "",
-            stateId = selectedStatePosition,
-            districtId = selectedDistrictPosition,
-            batchReady = false,
-            needLoad = false,
-            goingForLoad = false
-        )
-        val call = ApiClient.retrofit
-            .create(ApiService::class.java)
-            .getUserList(request)
+        }
+
+
+        loader.show()
+        isLoading = true
+
+        val request = buildUserListRequest(userId, currentPage, pageSizeInitial)
+        val call = ApiClient.retrofit.create(ApiService::class.java).getUserList(request)
+
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
+                loader.hide()
+                isLoading = false
+
                 if (response.isSuccess) {
-                    userList_1.clear()
+                    val mappedUsers = response.item.items.map { user -> mapUser(user) }
 
-                    val fetchedUsers = response.item.items
-                    if (fetchedUsers.isEmpty()) {
-                        loader.hide()
-                        personAdapter = RecyclerAdapter(userList_1) { /* item click logic */ }
-                        recyclerView.adapter = personAdapter
+                    if (reset) {
+                        initialUserList.clear()
+                        initialUserList.addAll(mappedUsers)
+                    }
+
+                    // ✅ Always append to master list
+                    masterUserList.addAll(mappedUsers)
+                    if (mappedUsers.isEmpty()) {
                         CustomAlertDialog(requireContext())
-                        .setTitle("No data found!")
-                        .setDescription("Traders are not available")
-                        .showOkButton(true, "OK") {
-                            println("User acknowledged the error.")
-                        }
-                        .showCancelButton(false)
-                        .show()
+                            .setTitle("No data found!")
+                            .setDescription("Traders are not available in this Location")
+                            .showOkButton(true, "OK") {
+                                println("User acknowledged the error.")
+                            }
+                            .showCancelButton(false)
+                            .show()
                         return@post
-                    }
-
-                    for (user in fetchedUsers) {
-                        val status = when {
-                            user.needLoad -> "Status: Need Load"
-                            else -> "Status: Not Needed"
+                    } else {
+                        if (reset) {
+                            personAdapter.updateList(mappedUsers)   // fresh set
+                        } else {
+                            personAdapter.appendList(mappedUsers)   // append for pagination
                         }
 
-                        val color = if (user.needLoad) "green" else "orange"
-
-                        val userModel = UserModel(
-                            role = UserRoles.getRoleNameById(user.roleID) ?: "Unknown",
-                            name = user.name ?: "No Name",
-                            detail = "Mobile: ${user.mobileNumber}",
-                            detail2 = "Shop Name: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
-                            status = status,
-                            colorTemp = color,
-                            batchReady = user.batchReady,
-                            needLoad = user.needLoad,
-                            goingForLoad = user.goingForLoad,
-                            batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
-                            needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
-                            goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime,
-                            stateID = user.stateID,
-                            districtID = user.districtID
-                        )
-                        userList_1.add(userModel)
                     }
-
-                    personAdapter = RecyclerAdapter(userList_1) { person ->
-                        val intent = Intent(context, EmployeDetails::class.java).apply {
-                            putExtra("name", person.name)
-                            putExtra("role", person.role)
-                            putExtra("mobile", person.detail)
-                        }
-                        startActivity(intent)
-                    }
-                    loader.hide()
-                    recyclerView.adapter = personAdapter
-                } else {
-                    Log.e("FarmerFrag", "Error: ${response.message}")
+                    isLastPage = mappedUsers.size < pageSizeInitial
                 }
             },
             onFailure = { error ->
-                Log.e("Dashboard", "Error: $error")
+                loader.hide()
+                isLoading = false
+                Log.e("FarmerFragment", "API Failure: $error")
             }
         )
     }
@@ -424,63 +519,139 @@ class TraderFragment : Fragment() {
         currentPage++
 
         val userId = SharedPreferencesManager.getUserId(requireContext())
-        val request = GetUserList(
-            userId = userId ?: "",
-            roleId = UserRoles.ID_SHOPKEEPER,
-            pageNumber = currentPage,
-            pageSize = pageSizeLoadMore,
-            search = "",
-            sortColumn = "",
-            sortDirection = "",
-            stateId = selectedStatePosition,
-            districtId = selectedDistrictPosition,
-            batchReady = false,
-            needLoad = false,
-            goingForLoad = false
-        )
+        val request = buildUserListRequest(userId, currentPage, pageSizeLoadMore)
 
-        val call = ApiClient.retrofit
-            .create(ApiService::class.java)
-            .getUserList(request)
+        val call = ApiClient.retrofit.create(ApiService::class.java).getUserList(request)
 
         ApiHelper.post(
             endpointCall = call,
             onSuccess = { response ->
                 isLoading = false
+                personAdapter.showLoadingFooter(false)
+
                 if (response.isSuccess) {
                     val fetchedUsers = response.item.items
-                    if (fetchedUsers.isEmpty()) {
-                        isLastPage = true
+                    if (fetchedUsers.isNotEmpty()) {
+                        val mappedUsers = fetchedUsers.map { user -> mapUser(user) }
+                        // ✅ Keep all data in master list
+                        masterUserList.addAll(mappedUsers)
+
+                        userList_1.addAll(mappedUsers)
+                        personAdapter.appendList(mappedUsers)
+
+                        isLastPage = fetchedUsers.size < pageSizeLoadMore
                     } else {
-                        for (user in fetchedUsers) {
-                            val status = if (user.needLoad) "Status: Need Load" else "Status: Not Needed"
-                            val color = if (user.needLoad) "green" else "orange"
-
-                            val userModel = UserModel(
-                                role = UserRoles.getRoleNameById(user.roleID) ?: "Unknown",
-                                name = user.name ?: "No Name",
-                                detail = "Mobile: ${user.mobileNumber}",
-                                detail2 = "Property: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
-                                status = status,
-                                colorTemp = color,
-                                batchReady = user.batchReady,
-                                needLoad = user.needLoad,
-                                goingForLoad = user.goingForLoad,
-                                batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
-                                needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
-                                goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime
-                            )
-                            userList_1.add(userModel)
-                        }
-
-                        personAdapter.notifyDataSetChanged()
+                        isLastPage = true
                     }
                 }
             },
             onFailure = { error ->
                 isLoading = false
+                personAdapter.showLoadingFooter(false)
                 Log.e("Pagination", "Error: $error")
             }
         )
+    }
+
+    private fun mapUser(user: UserItematList): UserModel {
+        val roleId = userRoleId
+        var status = "String"
+        var color = "red"
+        val isFarmer = roleId == UserRoles.ID_FARMER
+        val isShopkeeper = roleId == UserRoles.ID_SHOPKEEPER
+
+        if (isFarmer) {
+            if (user.needLoad) {
+                status = "Status: Need Load"
+                color = "green"
+            } else {
+                status = "Status: Load Not Needed"
+                color = "orange"
+            }
+        }
+        if (isShopkeeper) {
+            if (user.goingForLoad) {
+                status = "Status: Going For Load"
+                color = "green"
+            } else {
+                status = "Status: Not Going For Load"
+                color = "orange"
+            }
+        }
+
+        /*     val (status, color) = when {
+                 user.needLoad -> "Status: Need Load" to "green"
+                 user.goingForLoad  -> "Status: Going For Load" to "green"
+                 user.batchReady -> "Status: Batch Ready" to "green"
+                 else -> "Status: Not Needed" to "orange"
+             }*/
+
+        return UserModel(
+            role = getRoleName(user.roleID) ?: "Unknown",
+            name = user.name ?: "No Name",
+            detail = "Mobile: ${user.mobileNumber}",
+            detail2 = "Trade/Shop Name: ${user.propertyList.firstOrNull()?.propertyName ?: "N/A"}",
+            status = status,
+            colorTemp = color,
+            batchReady = user.batchReady,
+            needLoad = user.needLoad,
+            goingForLoad = user.goingForLoad,
+            batchReadyUpdatedDateTime = user.batchReadyUpdatedDateTime,
+            needLoadUpdatedDateTime = user.needLoadUpdatedDateTime,
+            goingForLoadUpdatedDateTime = user.goingForLoadUpdatedDateTime,
+            stateID = user.stateID,
+            districtID = user.districtID,
+            henCount = user.henCount,
+            henWeight = user.henWeight,
+            longitude = user.longitude,
+            latitude = user.latitude,
+            propertyList = user.propertyList ?: emptyList()   // 👈 pass it properly
+
+        )
+    }
+
+    private fun buildUserListRequest(
+        userId: String?,
+        pageNumber: Int,
+        pageSize: Int
+    ): GetUserList {
+        val query = searchView.query.toString().trim().lowercase()
+
+        var batchReady = false
+        var needLoad = false
+        var goingForLoad = false
+        var search = ""
+
+        when (query) {
+            "batchready" -> batchReady = true
+            "needload" -> needLoad = true
+            "goingforload" -> goingForLoad = true
+            else -> {
+                if (query.length >= searchCharLimit || fromFilterClick) {
+                    search = query
+                }
+            }
+        }
+
+        return GetUserList(
+            userId = userId ?: "",
+            roleId = UserRoles.ID_TRADER,
+            pageNumber = pageNumber,
+            pageSize = pageSize,
+            search = search,
+            sortColumn = "",
+            sortDirection = "",
+            stateId = selectedStatePosition,
+            districtId = selectedDistrictPosition,
+            batchReady = batchReady,
+            needLoad = needLoad,
+            goingForLoad = goingForLoad
+        )
+    }
+
+    private fun hideKeyboard(view: View) {
+        val imm =
+            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }

@@ -5,6 +5,7 @@
     android:id="@+id/Registration"
     android:background="@color/bgColor"
     android:layout_width="match_parent"
+    android:forceDarkAllowed="false"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".RegisterSingup">

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.google.common.reflect.TypeToken
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
@@ -12,6 +13,7 @@ import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.DBManager.State
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.UserItem
+import com.gsggroups.poultrymarket.Utils.UpdateManager
 import java.io.InputStreamReader
 
 class SplashActivity : AppCompatActivity() {
@@ -19,29 +21,37 @@ class SplashActivity : AppCompatActivity() {
     private val SPLASH_TIME: Long = 1000
     private val TAG = "FirestoreLogs"
     val gson = Gson()
+    private lateinit var updateManager: UpdateManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(R.layout.activity_splash)
+        updateManager = UpdateManager(this)
+
+        // Check for update
+        updateManager.checkForUpdate()
 
 
 
-//                 uploadJsonToFirestore()
-        
-            //Delay
-            val signInStatus = SharedPreferencesManager.getSignedIn(this)
-        if (signInStatus) {
-            Handler().postDelayed({
-                startActivity(Intent(this, Dashboard::class.java))
-                finish()
-            }, SPLASH_TIME)
-        } else {
-            Handler().postDelayed({
-                startActivity(Intent(this, WelcomeActivity::class.java))
-                finish()
-            }, SPLASH_TIME)
-        }
-
+        Handler().postDelayed({
+            navigateNext()
+        }, SPLASH_TIME)
+    }
+   fun  navigateNext(){
+       //Delay
+       val signInStatus = SharedPreferencesManager.getSignedIn(this)
+       if (signInStatus) {
+           Handler().postDelayed({
+               startActivity(Intent(this, Dashboard::class.java))
+               finish()
+           }, SPLASH_TIME)
+       } else {
+           Handler().postDelayed({
+               startActivity(Intent(this, WelcomeActivity::class.java))
+               finish()
+           }, SPLASH_TIME)
+       }
     }
 
     private fun checkFireStoreFile() {
@@ -98,5 +108,15 @@ class SplashActivity : AppCompatActivity() {
                 }
         }
     }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        updateManager.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        updateManager.unregisterListener()
+    }
+
 
 }

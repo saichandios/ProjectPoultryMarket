@@ -5,6 +5,7 @@
     android:id="@+id/Registration"
     android:background="@color/bgColor"
     android:layout_width="match_parent"
+    android:forceDarkAllowed="false"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".RegisterSingup">
@@ -41,7 +42,6 @@
                 android:id="@+id/textfield_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableStart="@android:drawable/ic_menu_gallery"
                 android:hint="@string/edit_name"
                 android:padding="8dp" />
 
@@ -51,7 +51,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:drawableStart="@android:drawable/ic_menu_gallery"
                 android:hint="@string/edit_mobile"
                 android:inputType="phone"
                 android:maxLength="10"
@@ -63,7 +62,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:drawableStart="@android:drawable/ic_menu_gallery"
                 android:hint="@string/edit_pin"
                 android:inputType="numberPassword"
                 android:maxLength="4"
@@ -75,7 +73,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:drawableStart="@android:drawable/ic_menu_gallery"
                 android:hint="@string/edit_farm_name"
                 android:padding="8dp" />
 
@@ -103,7 +100,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:drawableStart="@android:drawable/ic_menu_info_details"
                 android:hint="@string/address1"
                 android:padding="8dp" />
 
@@ -158,6 +154,7 @@
                 android:textColor="#0037FF"
                 android:textStyle="bold"
                 android:textSize="18sp"
+                android:visibility="gone"
                 android:clickable="true" />
 
             <!-- Submit -->
@@ -168,7 +165,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="30dp"
                 android:backgroundTint="@color/bgButtonColor"
-                android:text="Submit"
+                android:text="Update"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
