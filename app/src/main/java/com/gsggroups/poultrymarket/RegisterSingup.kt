@@ -257,7 +257,7 @@ class RegisterSingup: AppCompatActivity() {
             }
             else -> {
                 tfFarm.hint = "Enter Farm Name"
-                tfAdd2.hint = "Go to Hen Farm location and click on GPS button in this box"
+                tfAdd2.hint = "click on GPS button to locate you --->"
                 tfFarm.visibility = View.VISIBLE
             }
         }

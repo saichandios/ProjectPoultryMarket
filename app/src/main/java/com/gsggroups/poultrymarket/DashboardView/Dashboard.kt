@@ -389,12 +389,20 @@ class Dashboard : AppCompatActivity() {
 
             R.id.nav_BatchReady -> BatchReadyFragment()
             R.id.nav_GoingForLoad -> GoingForLoadFragment()
-            R.id.nav_NeedEmployee -> NeedEmployee()
+//            R.id.nav_NeedEmployee -> NeedEmployee()
             R.id.nav_Profile -> EditProfile()
-            R.id.nav_EmployeeList -> EmployeeTabLayout()
-            R.id.nav_Notification -> NotificationTabLayoutFragment()
-            R.id.nav_ChickenRates -> ChickenRatesFragment()
-            R.id.nav_EggRates -> EggRatesFragment()
+//            R.id.nav_EmployeeList -> EmployeeTabLayout()
+//            R.id.nav_Notification -> NotificationTabLayoutFragment()
+//            R.id.nav_ChickenRates -> ChickenRatesFragment()
+//            R.id.nav_EggRates -> EggRatesFragment()
+            R.id.nav_ChickenRates -> {
+                Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show()
+                return
+            }
+            R.id.nav_EggRates -> {
+                Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show()
+                return
+            }
             R.id.nav_Logout -> {
                 val intent = Intent(this, Login::class.java)
                 intent.flags =

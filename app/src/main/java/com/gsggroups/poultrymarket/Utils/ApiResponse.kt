@@ -51,3 +51,8 @@ data class Property(
     val createdDateTime: String,
     val updatedDateTime: String
 )
+
+data class ApiVersion(
+    val latestVersion: String,
+    val forceUpdate: Boolean
+)

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:showIn="navigation_view">
+    tools:showIn="navigation_view"
+    android:fitsSystemWindows="true">
 
     <group android:checkableBehavior="single">
     <item
@@ -16,14 +17,14 @@
             android:id="@+id/nav_GoingForLoad"
             android:title="Going For Load"
             android:icon="@drawable/batch_ready_side" />
-    <item
-        android:id="@+id/nav_EmployeeList"
-        android:title="Employee List"
-        android:icon="@drawable/employee_list_side" />
-    <item
-        android:id="@+id/nav_NeedEmployee"
-        android:title="Need Employee"
-        android:icon="@drawable/need_employee_side" />
+<!--    <item-->
+<!--        android:id="@+id/nav_EmployeeList"-->
+<!--        android:title="Employee List"-->
+<!--        android:icon="@drawable/employee_list_side" />-->
+<!--    <item-->
+<!--        android:id="@+id/nav_NeedEmployee"-->
+<!--        android:title="Need Employee"-->
+<!--        android:icon="@drawable/need_employee_side" />-->
 
     </group>
 
@@ -31,13 +32,13 @@
     <item android:title="Todo">
         <menu>
             <group android:checkableBehavior="single">
-            <item
-                android:id="@+id/nav_Notification"
-                android:title="Notifications"
-                android:icon="@drawable/notification_side" />
+<!--            <item-->
+<!--                android:id="@+id/nav_Notification"-->
+<!--                android:title="Notifications"-->
+<!--                android:icon="@drawable/notification_side" />-->
             <item
                 android:id="@+id/nav_Profile"
-                android:title="Profile"
+                android:title="Edit Profile"
                 android:icon="@drawable/profile_side" />
             </group>
         </menu>

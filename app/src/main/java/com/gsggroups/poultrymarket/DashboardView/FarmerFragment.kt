@@ -239,8 +239,12 @@ class FarmerFragment : Fragment() {
 
 //                getUserList(userId, reset = true)
                 filterButton.text = "Filter"
+                fromFilterClick=false
+                if (searchView.query.toString().isEmpty()) {
+                    getUserList(userId, reset = true)
+                    fromFilterClick = true
+                }
                 searchView.setQuery("", false)
-                fromFilterClick = false
             } else {
                 fromFilterClick = true
                 if (stateSpinner.selectedItemPosition == 0) {
@@ -287,7 +291,6 @@ class FarmerFragment : Fragment() {
             userList_1.clear()
             personAdapter.updateList(arrayListOf()) // clear adapter
             masterUserList.clear()
-
         }
 
         loader.show()
@@ -315,7 +318,7 @@ class FarmerFragment : Fragment() {
                         if (mappedUsers.isEmpty()) {
                             CustomAlertDialog(requireContext())
                                 .setTitle("No data found!")
-                                .setDescription("Farmers are not available in this Location")
+                                .setDescription("Farmers are not available!!")
                                 .showOkButton(true, "OK") {
                                     println("User acknowledged the error.")
                                 }
@@ -341,7 +344,7 @@ class FarmerFragment : Fragment() {
                 )
             }
 
-                    private fun setupSearchView() {
+        private fun setupSearchView() {
                 searchView.setIconifiedByDefault(false)
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean {
@@ -366,41 +369,30 @@ class FarmerFragment : Fragment() {
                             val userId = SharedPreferencesManager.getUserId(requireContext())
 
                             when {
-                                query.isEmpty() -> {
+                                query.isEmpty() && !fromFilterClick -> {
                                     // Show initial first-loaded list
 //                            personAdapter.updateList(initialUserList)
 //                            currentPage = 1
 //                            isLastPage = false
                                     getUserList(userId, reset = true)
-                                    hideKeyboard(searchView)
-                                    searchView.clearFocus()
-
+//                                    hideKeyboard(searchView)
+//                                    searchView.clearFocus()
                                 }
 
                                 query == "batchready" || query == "needload" || query == "goingforload" -> {
                                     getUserList(userId, reset = true)
-                                    hideKeyboard(searchView)
-                                    searchView.clearFocus()
-
                                 }
 
                                 query.length == 7 -> {
                                     getUserList(userId, reset = true)
-                                    hideKeyboard(searchView)
-
                                 }
 
                                 query.length == 4 -> {
                                     getUserList(userId, reset = true)
-                                    hideKeyboard(searchView)
                                 }
 
                                 query.length >= 1 -> {
                                     filterLocally(query)
-                                }
-
-                                else -> {
-                                    personAdapter.updateList(arrayListOf())
                                 }
                             }
                         }
@@ -434,9 +426,10 @@ class FarmerFragment : Fragment() {
                         showHistoryPopup(searchView)
                     }
                 }
-            }
+          }
 
-                    private fun showHistoryPopup(anchor: View) {
+
+           private fun showHistoryPopup(anchor: View) {
                 val inflater = LayoutInflater.from(requireContext())
                 val popupView = inflater.inflate(R.layout.popup_history, null)
 

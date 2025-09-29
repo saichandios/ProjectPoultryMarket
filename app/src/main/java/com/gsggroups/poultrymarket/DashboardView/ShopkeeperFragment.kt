@@ -234,8 +234,12 @@ class ShopkeeperFragment : Fragment() {
 
 //                getUserList(userId, reset = true)
                 filterButton.text = "Filter"
-                searchView.setQuery("", false)
                 fromFilterClick=false
+                if (searchView.query.toString().isEmpty()) {
+                    getUserList(userId, reset = true)
+                    fromFilterClick = true
+                }
+                searchView.setQuery("", false)
             } else {
                 fromFilterClick=true
                 if (stateSpinner.selectedItemPosition == 0) {
@@ -346,8 +350,9 @@ private var currentQuery: String = ""
                                 // If nothing matches, clear list
                                 personAdapter.updateList(arrayListOf())
                             }*/
-                        query.isEmpty() -> {
-                            getUserList(userId, reset = true)                        }
+                        query.isEmpty() && !fromFilterClick -> {
+                            getUserList(userId, reset = true)
+                        }
 
                         query == "batchready" || query == "needload" || query == "goingforload" -> {
                             getUserList(userId, reset = true)   // API call
@@ -490,7 +495,7 @@ private var currentQuery: String = ""
                     if (mappedUsers.isEmpty()) {
                         CustomAlertDialog(requireContext())
                             .setTitle("No data found!")
-                            .setDescription("Shopkeepers are not available in this Location")
+                            .setDescription("Shopkeepers are not available!!")
                             .showOkButton(true, "OK") {
                                 println("User acknowledged the error.")
                             }

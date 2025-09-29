@@ -22,6 +22,27 @@
         <item>2.8 kg</item>
         <item>2.9 kg</item>
         <item>3.0 kg</item>
+        <item>3.0 kg</item>
+        <item>3.1 kg</item>
+        <item>3.2 kg</item>
+        <item>3.3 kg</item>
+        <item>3.4 kg</item>
+        <item>3.5 kg</item>
+        <item>3.6 kg</item>
+        <item>3.7 kg</item>
+        <item>3.8 kg</item>
+        <item>3.9 kg</item>
+        <item>4.0 kg</item>
+        <item>4.1 kg</item>
+        <item>4.2 kg</item>
+        <item>4.3 kg</item>
+        <item>4.4 kg</item>
+        <item>4.5 kg</item>
+        <item>4.6 kg</item>
+        <item>4.7 kg</item>
+        <item>4.8 kg</item>
+        <item>4.9 kg</item>
+        <item>5.0 kg</item>
     </string-array>
 
     <string-array name="farm_values">

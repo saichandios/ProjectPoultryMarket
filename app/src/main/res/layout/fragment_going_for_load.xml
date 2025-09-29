@@ -71,7 +71,8 @@
                 android:hint="Enter count"
                 android:inputType="number"
                 android:background="@android:drawable/edit_text"
-                android:padding="8dp"/>
+                android:padding="8dp"
+                android:maxLength="9"/>
         </LinearLayout>
 
         <!-- Layout 3: Hen Size with Dropdown -->

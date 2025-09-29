@@ -10,7 +10,6 @@ interface ApiService {
     @POST("/registerUser")
     fun registerUser(@Body request: Any): Call<ApiResponseNew<UserItem>>
 
-
     @POST("/loginUser")
     fun loginUser(@Body request: Any): Call<ApiResponse<UserItem>>
 
@@ -29,8 +28,7 @@ interface ApiService {
     @POST("/goingForLoad")
     fun goingForLoad(@Body request: Any): Call<ApiResponse<Any>>
 
- @POST("/updateUser")
+    @POST("/updateUser")
     fun updateUserProfile(@Body request: Any): Call<ApiResponseNew<UserItem>>
 
-    // Add other API methods here
 }

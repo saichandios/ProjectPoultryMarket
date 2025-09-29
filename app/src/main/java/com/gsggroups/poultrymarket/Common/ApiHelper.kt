@@ -3,6 +3,7 @@ package com.gsggroups.poultrymarket.Common
 import android.util.Log
 import com.gsggroups.poultrymarket.Utils.ApiResponse
 import com.gsggroups.poultrymarket.Utils.ApiResponseNew
+import com.gsggroups.poultrymarket.Utils.ApiVersion
 import com.gsggroups.poultrymarket.base.ApiClient
 import org.json.JSONObject
 import retrofit2.Call
@@ -89,6 +90,37 @@ object ApiHelper {
             }
         })
     }
+
+//    fun <T> postApiVersion(
+//        apiCall: Call<ApiVersion<T>>,
+//        onSuccess: (ApiVersion<T>) -> Unit,
+//        onFailure: (String) -> Unit
+//    ) {
+//        apiCall.enqueue(object : Callback<ApiVersion<T>> {
+//            override fun onResponse(
+//                call: Call<ApiVersion<T>>,
+//                response: Response<ApiVersion<T>>
+//            ) {
+//                if (response.isSuccessful && response.body() != null) {
+//                    onSuccess(response.body()!!)
+//                } else {
+//                    val errorMsg = try {
+//                        val errorBody = response.errorBody()?.string()
+//                        val errorJson = JSONObject(errorBody ?: "")
+//                        errorJson.optString("message", response.message()) // fallback to generic message
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                        response.message()
+//                    }
+//                    onFailure(errorMsg ?: "Unknown error")
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<ApiVersion<T>>, t: Throwable) {
+//                onFailure(t.localizedMessage ?: "Something went wrong")
+//            }
+//        })
+//    }
 }
 
 // Common handler for all API calls
@@ -117,6 +149,10 @@ private fun <T> handleApiCall(
             onFailure(t.message ?: "Unknown error")
         }
     })
+
+
+
+
 }
 
 //object ApiHelper {

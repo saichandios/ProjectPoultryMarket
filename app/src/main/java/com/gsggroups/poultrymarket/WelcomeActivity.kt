@@ -73,7 +73,7 @@ class WelcomeActivity : AppCompatActivity() {
 
         // Fetch FCM Token
         firebaseCaller()
-        NotificationUtils.checkNotificationStatus(this)
+//        NotificationUtils.checkNotificationStatus(this)
         adminButtonCaller()
 
         // Get references to the cards

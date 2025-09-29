@@ -412,6 +412,7 @@ Log.d("Location Values",farmLat.toString()+","+farmLong.toString())
                 loader.hide()
                 CustomAlertDialog(requireContext())
                     .setTitle("Location permission is required to fetch GPS coordinates.")
+                    .setDescription("")
                     .showOkButton(true, "OK") {}.showCancelButton(false).show()
             }
         }

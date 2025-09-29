@@ -3,17 +3,20 @@ package com.gsggroups.poultrymarket
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.common.reflect.TypeToken
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
+import com.gsggroups.poultrymarket.Common.LoaderUtils
 import com.gsggroups.poultrymarket.Common.SharedPreferencesManager
 import com.gsggroups.poultrymarket.Common.UserRoles
 import com.gsggroups.poultrymarket.DBManager.State
 import com.gsggroups.poultrymarket.DashboardView.Dashboard
 import com.gsggroups.poultrymarket.Model.UserItem
-import com.gsggroups.poultrymarket.Utils.UpdateManager
+import com.gsggroups.poultrymarket.Common.ForceUpdateManager
+
 import java.io.InputStreamReader
 
 class SplashActivity : AppCompatActivity() {
@@ -21,21 +24,29 @@ class SplashActivity : AppCompatActivity() {
     private val SPLASH_TIME: Long = 1000
     private val TAG = "FirestoreLogs"
     val gson = Gson()
-    private lateinit var updateManager: UpdateManager
+//    private lateinit var updateManager: UpdateManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(R.layout.activity_splash)
-        updateManager = UpdateManager(this)
+//        updateManager = UpdateManager(this)
 
         // Check for update
-        updateManager.checkForUpdate()
+//        updateManager.checkForUpdate()
 
+        // Check for app version update
+        var loader = LoaderUtils(this)
+        var shouldNavigate = true
+        ForceUpdateManager.checkAndShowUpdateDialog(this, loader) {
+            // Force update required -> stop navigation
+            shouldNavigate = false
+        }
 
-
-        Handler().postDelayed({
-            navigateNext()
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (shouldNavigate) {
+                navigateNext()
+            }
         }, SPLASH_TIME)
     }
    fun  navigateNext(){
@@ -110,12 +121,12 @@ class SplashActivity : AppCompatActivity() {
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        updateManager.onActivityResult(requestCode, resultCode, data)
+//        updateManager.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        updateManager.unregisterListener()
+//        updateManager.unregisterListener()
     }
 
 

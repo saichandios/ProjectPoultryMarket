@@ -1,32 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:background="@android:color/white"
     android:padding="8dp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_marginRight="30dp"
+    android:layout_width="match_parent"
+    android:backgroundTint="#C6F8C8"
+    android:layout_height="wrap_content"
+    android:background="@drawable/border_frame">
 
     <TextView
         android:id="@+id/itemBatchReady"
-        android:layout_width="wrap_content"
+        android:text="BATCH READY"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Batch Ready"
-        android:padding="8dp"
-        android:textColor="@android:color/black" />
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@android:color/black"/>
+
 
     <TextView
         android:id="@+id/itemNeedLoad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="Need Load"
-        android:padding="8dp"
-        android:textColor="@android:color/black" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@android:color/black"/>
 
     <TextView
         android:id="@+id/itemGoingForLoad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="Going for Load"
-        android:padding="8dp"
-        android:textColor="@android:color/black" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@android:color/black"/>
 </LinearLayout>

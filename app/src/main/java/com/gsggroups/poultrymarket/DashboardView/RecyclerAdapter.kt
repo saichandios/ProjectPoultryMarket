@@ -130,9 +130,9 @@ class RecyclerAdapter(
             val ivIcon = itemView.findViewById<ImageView>(R.id.ivIcon)
             when (fragmentType) {
                 "FarmerFragment" -> ivIcon.setImageResource(R.drawable.animal)
-                "TraderFragment" -> ivIcon.setImageResource(R.drawable.trader)
+                "TraderFragment" -> ivIcon.setImageResource(R.drawable.trader_zoom)
                 "ShopkeeperFragment" -> ivIcon.setImageResource(R.drawable.shopkeeper)
-                else -> ivIcon.setImageResource(R.drawable.animal) // Default icon
+                else -> ivIcon.setImageResource(R.drawable.profile_side) // Default icon
             }
 
 

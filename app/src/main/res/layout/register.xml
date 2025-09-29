@@ -152,8 +152,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:drawableLeft="@android:drawable/ic_menu_info_details"
-                    android:hint="Enter Address" />
+                    android:hint="Enter Address(Landmark)" />
             </LinearLayout>
 
             <!-- Multiline TextField for Address -->
@@ -170,7 +169,7 @@
                     android:background="@drawable/border_edittext"
                     android:enabled="false"
                     android:gravity="top"
-                    android:hint="Go to Hen Farm location and click on GPS button "
+                    android:hint="click on GPS button to locate you -->"
                     android:inputType="textMultiLine"
                     android:lines="4" />
 
@@ -181,7 +180,8 @@
                     android:layout_gravity="end|top"
                     android:layout_marginTop="-45dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@android:drawable/ic_input_add" />
+                    android:contentDescription="Click on gps button to get your address"
+                    android:src="@drawable/location" />
             </LinearLayout>
 
             <!-- Register Button -->

@@ -243,10 +243,13 @@ class TraderFragment : Fragment() {
                 selectedStatePosition = 0
                 selectedDistrictPosition = 0
 
-//                getUserList(userId, reset = true)
                 filterButton.text = "Filter"
-                searchView.setQuery("", false)
                 fromFilterClick=false
+                if (searchView.query.toString().isEmpty()) {
+                    getUserList(userId, reset = true)
+                    fromFilterClick = true
+                }
+                searchView.setQuery("", false)
             } else {
                 fromFilterClick=true
                 if (stateSpinner.selectedItemPosition == 0) {
@@ -337,8 +340,9 @@ class TraderFragment : Fragment() {
                             // If nothing matches, clear list
                             personAdapter.updateList(arrayListOf())
                         }*/
-                        query.isEmpty() -> {
-                            getUserList(userId, reset = true)                        }
+                        query.isEmpty() && !fromFilterClick -> {
+                            getUserList(userId, reset = true)
+                        }
 
                         query == "batchready" || query == "needload" || query == "goingforload" -> {
                             getUserList(userId, reset = true)   // API call
@@ -487,7 +491,7 @@ class TraderFragment : Fragment() {
                     if (mappedUsers.isEmpty()) {
                         CustomAlertDialog(requireContext())
                             .setTitle("No data found!")
-                            .setDescription("Traders are not available in this Location")
+                            .setDescription("Traders are not available!!")
                             .showOkButton(true, "OK") {
                                 println("User acknowledged the error.")
                             }

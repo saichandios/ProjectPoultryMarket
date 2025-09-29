@@ -6,6 +6,7 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:padding="15dp"
 android:id="@+id/welcome"
+    android:fitsSystemWindows="true"
     android:background="@color/bgColor"
 tools:context=".WelcomeActivity">
 
@@ -44,15 +45,15 @@ tools:context=".WelcomeActivity">
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/logoImageView"
-        android:layout_marginLeft="24dp"
+        android:layout_marginLeft="30dp"
         android:layout_marginTop="30dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginRight="20dp"
         android:columnCount="2">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardFarmer1"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_row="1"
             android:layout_column="0"
             android:layout_gravity="center"
@@ -62,20 +63,23 @@ tools:context=".WelcomeActivity">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingRight="40dp"
+                android:paddingLeft="40dp"
+                android:paddingTop="25dp"
+                android:paddingBottom="25dp">
 
                 <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
                     android:src="@drawable/animal" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="10dp"
                     android:text="Farmer"
                     android:textColor="@color/black"
                     android:textSize="20sp"
@@ -86,8 +90,8 @@ tools:context=".WelcomeActivity">
         <!--        2nd card right side -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardTrader"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_row="1"
             android:layout_column="1"
             android:layout_gravity="center"
@@ -97,14 +101,17 @@ tools:context=".WelcomeActivity">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingRight="38dp"
+                android:paddingLeft="38dp"
+                android:paddingTop="25dp"
+                android:paddingBottom="25dp">
 
                 <ImageView
-                    android:layout_width="160dp"
-                    android:layout_height="80dp"
+                    android:layout_width="70dp"
+                    android:layout_height="65dp"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
-                    android:src="@drawable/trader" />
+                    android:src="@drawable/trader_zoom" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -122,8 +129,8 @@ tools:context=".WelcomeActivity">
         <!--        3rd card right side -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardShopkeeper"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_row="2"
             android:layout_column="0"
             android:layout_gravity="center"
@@ -133,13 +140,16 @@ tools:context=".WelcomeActivity">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingRight="17dp"
+                android:paddingLeft="17dp"
+                android:paddingTop="25dp"
+                android:paddingBottom="25dp">
 
                 <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
+                    android:layout_width="70dp"
+                    android:layout_height="50dp"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
                     android:src="@drawable/shopkeeper" />
 
                 <TextView
@@ -158,8 +168,8 @@ tools:context=".WelcomeActivity">
         <!--        4th card right side -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardEmployement"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_row="2"
             android:layout_column="1"
             android:layout_gravity="center"
@@ -169,13 +179,16 @@ tools:context=".WelcomeActivity">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingRight="2dp"
+                android:paddingLeft="2dp"
+                android:paddingTop="25dp"
+                android:paddingBottom="25dp">
 
                 <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="15dp"
                     android:src="@drawable/recruitment" />
 
                 <TextView
@@ -194,12 +207,16 @@ tools:context=".WelcomeActivity">
 
     <FrameLayout
         android:id="@+id/rate_card"
-        android:layout_width="200dp"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="40dp"
+        android:paddingLeft="40dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
         android:layout_centerInParent="true"
         android:background="@drawable/card_border"
         android:layout_below="@id/top_view"
-        android:layout_margin="35dp">
+        android:layout_margin="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -208,7 +225,7 @@ tools:context=".WelcomeActivity">
                 android:gravity="center"
                 android:text="Rates"
                 android:textColor="@android:color/holo_red_dark"
-                android:textSize="25sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
     </FrameLayout>
 
