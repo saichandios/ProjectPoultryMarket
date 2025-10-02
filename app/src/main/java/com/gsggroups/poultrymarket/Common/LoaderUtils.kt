@@ -9,7 +9,7 @@ import com.gsggroups.poultrymarket.R
 
 class LoaderUtils(private val context: Context) {
 
-    private var loaderDialog: Dialog? = null
+    var loaderDialog: Dialog? = null
     private var ivClose: ImageView? = null
 
     // Show the loader

@@ -572,7 +572,7 @@ private var currentQuery: String = ""
 
             user.needLoad -> "Status: Need Load" to "green"
 
-            else -> "Status: Load not Available" to "orange"
+            else -> "Status: Load not needed" to "orange"
         }
         return UserModel(
             role = getRoleName(user.roleID) ?: "Unknown",
