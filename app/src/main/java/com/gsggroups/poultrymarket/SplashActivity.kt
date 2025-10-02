@@ -65,8 +65,8 @@ class SplashActivity : AppCompatActivity() {
             ) {
                 withContext(Dispatchers.IO) {
                     val okHttpClient = OkHttpClient.Builder()
-                        .connectTimeout(15, TimeUnit.SECONDS)
-                        .readTimeout(30, TimeUnit.SECONDS)   // 🔹 allow long server response
+                        .connectTimeout(3, TimeUnit.SECONDS)
+                        .readTimeout(5, TimeUnit.SECONDS)   // 🔹 allow long server response
                         .writeTimeout(15, TimeUnit.SECONDS)
                         .build()
 
