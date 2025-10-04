@@ -136,8 +136,8 @@ class EmployeDetails : AppCompatActivity(), OnMapReadyCallback {
             status.text = "${it.status}"
             name.text = "Name: ${it.name}"
             mobile.text = "${it.detail}"
-            hencount.text = "Hen Count: ${it.henCount} "
-            henweight.text = "Hen Weight: ${it.henWeight} Kgs"
+            hencount.text = "Total Hens Count: ${it.henCount} "
+            henweight.text = "Each Hen Weight: ${it.henWeight} Kgs"
             address.text =
                 "Address (Landmark): ${it.propertyList.firstOrNull()?.address1 ?: "Not Available"}"
             location.text =

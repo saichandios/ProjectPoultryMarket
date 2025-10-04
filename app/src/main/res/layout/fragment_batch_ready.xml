@@ -11,6 +11,18 @@
         android:gravity="center"
         android:padding="16dp">
 
+        <!-- NEW INFO MESSAGE AT TOP -->
+        <TextView
+            android:id="@+id/info_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Submit form!  You’ll be highlighted to farmers."
+            android:textSize="16sp"
+            android:textColor="@color/bgButtonColor"
+            android:padding="10dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"/>
+
         <!-- Layout 1: Load Availability with Switch -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -59,7 +71,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hen Count"
+                android:text="Total Hens Count"
                 android:textSize="16sp"
                 android:textColor="#000"
                 android:layout_marginBottom="8dp"/>
@@ -89,7 +101,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hen Size(Kgs)"
+                android:text="Each Hen Size(Kgs)"
                 android:textSize="16sp"
                 android:textColor="#000"
                 android:layout_marginBottom="8dp"/>

@@ -58,6 +58,7 @@ class GoingForLoadFragment : Fragment() {
     private lateinit var submitButton: Button
     private lateinit var activateAllButton: Button
     private lateinit var loader: LoaderUtils
+    private lateinit var infoText: TextView
     var roleId: Int = 936
 
     // TODO: Rename and change types of parameters
@@ -96,6 +97,7 @@ class GoingForLoadFragment : Fragment() {
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button)
         activateAllButton = view.findViewById(R.id.completed_activate_all_button)
+        infoText = view.findViewById(R.id.info_message_going)
         activateAllButton.setText("Load Received")
         load_available_switch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -151,7 +153,7 @@ class GoingForLoadFragment : Fragment() {
 
             val henCountValue = henCountStr.toIntOrNull()
             if (henCountValue == null || henCountValue <= 0) {
-                henCountEditText.error = "Hen count must be greater than 0"
+                henCountEditText.error = "Total Hens count must be greater than 0"
                 henCountEditText.requestFocus()
                 return@setOnClickListener
             }
@@ -258,6 +260,8 @@ class GoingForLoadFragment : Fragment() {
             submitButton.isEnabled = false
             submitButton.text = "Submitted"
             submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+            infoText.text = "You are highlighted to Shopkeepers."
+            infoText.setTextColor(Color.parseColor("#008000"))
             if (henSizeFromShared.isNotEmpty() && henCountFromShared !in listOf(
                         "0",
             "null"
@@ -285,6 +289,8 @@ class GoingForLoadFragment : Fragment() {
 
             activateAllButton.isEnabled = false
             activateAllButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
+            infoText.text = "Submit form!  You’ll be highlighted to Shopkeepers."
+            infoText.setTextColor(Color.RED)
         }
     }
 
@@ -487,6 +493,9 @@ class GoingForLoadFragment : Fragment() {
                     )
                 }
 
+                infoText.text = "You are highlighted to Shopkeepers."
+                infoText.setTextColor(Color.parseColor("#008000"))
+
                 sharedViewModel.setGoingForLoad(true)
                 SharedPreferencesManager.saveGoingBoolean(ctx, true)
                 SharedPreferencesManager.saveHenCountSubmitGoing(ctx, henCount.toString())
@@ -516,6 +525,8 @@ class GoingForLoadFragment : Fragment() {
 
                 henCountEditText.isEnabled = true
                 henSizeSpinner.isEnabled = true
+                infoText.text = "Submit form!  You’ll be highlighted to Shopkeepers."
+                infoText.setTextColor(Color.RED)
             }
         } else {
             Log.e("SubmitLoad", "Failed: ${response.message}")

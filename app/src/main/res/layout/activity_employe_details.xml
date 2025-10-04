@@ -67,13 +67,11 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:orientation="vertical"
             android:padding="16dp">
 
-
-
-                <Button
+            <Button
                     android:id="@+id/getdirectionsbtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -93,7 +91,7 @@ android:layout_gravity="end"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Name: "
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/shopName"
@@ -101,7 +99,7 @@ android:layout_gravity="end"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Shop Name : "
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -117,7 +115,7 @@ android:layout_gravity="end"
                     android:layout_weight="1"
                     android:autoLink="phone"
                     android:textColor="@android:color/holo_purple"
-                    android:textSize="20sp" />
+                    android:textSize="18sp" />
 
                 <ImageButton
                     android:id="@+id/whatsapp_button"
@@ -135,16 +133,16 @@ android:layout_gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Hen Count : "
-                android:textSize="20sp" />
+                android:text="Total Hens Count : "
+                android:textSize="17sp" />
 
             <TextView
                 android:id="@+id/henweight"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Hen Weight : "
-                android:textSize="20sp" />
+                android:text="Each Hen Weight : "
+                android:textSize="17sp" />
 
             <TextView
                 android:id="@+id/address"
@@ -152,23 +150,23 @@ android:layout_gravity="end"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Address (Landmark) : "
-                android:textSize="20sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="Location : "
-                android:textSize="20sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/district"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="District Name : "
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/statename"
@@ -176,7 +174,7 @@ android:layout_gravity="end"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="State Name : "
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
         </LinearLayout>
     </ScrollView>

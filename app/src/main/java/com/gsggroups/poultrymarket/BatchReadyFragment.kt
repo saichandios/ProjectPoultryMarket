@@ -57,6 +57,7 @@ class BatchReadyFragment : Fragment() {
     private lateinit var submitButton: Button
     private lateinit var ActivateAllButton: Button
     private lateinit var loader: LoaderUtils
+    private lateinit var infoText: TextView
     var roleId: Int = 936
 
     private val sharedViewModel: SharedViewModel by activityViewModels()
@@ -97,7 +98,7 @@ class BatchReadyFragment : Fragment() {
         farmSpinner = view.findViewById(R.id.farm_spinner)         // use ID if set
         submitButton = view.findViewById(R.id.submit_button_batch_need)
         ActivateAllButton = view.findViewById(R.id.completed_activate_all_button_batch)
-
+        infoText = view.findViewById(R.id.info_message)
 
 
         val userId = SharedPreferencesManager.getUserId(requireContext())
@@ -120,11 +121,18 @@ class BatchReadyFragment : Fragment() {
         if (roleId == UserRoles.ID_FARMER) {
             loadDescription = "Batch Ready"
             ActivateAllButton.setText("Batch Sold Out")
-
+            infoText.text = "Submit form!  You’ll be highlighted to Traders."
+            infoText.setTextColor(Color.RED)
+        } else if (roleId == UserRoles.ID_SHOPKEEPER){
+            loadDescription = "Need Load"
+            ActivateAllButton.setText("Load Received")
+            infoText.text = "Submit form!  You’ll be highlighted to Traders."
+            infoText.setTextColor(Color.RED)
         } else {
             loadDescription = "Need Load"
             ActivateAllButton.setText("Load Received")
-
+            infoText.text = "Submit form!  You’ll be highlighted to Farmers."
+            infoText.setTextColor(Color.RED)
         }
         checkAndDisableButtonIfNeeded()
 
@@ -188,7 +196,7 @@ if (roleId == UserRoles.ID_TRADER) {
 
             val henCountValue = henCountStr.toIntOrNull()
             if (henCountValue == null || henCountValue <= 0) {
-                henCountEditText.error = "Hen count must be greater than 0"
+                henCountEditText.error = "Total Hens count must be greater than 0"
                 henCountEditText.requestFocus()
                 return@setOnClickListener
             }
@@ -235,6 +243,8 @@ if (roleId == UserRoles.ID_TRADER) {
             henSizeSpinner.isEnabled = false
             submitButton.isEnabled = false
             submitButton.text = "Submitted"
+            infoText.text = "You are highlighted to Farmers."
+            infoText.setTextColor(Color.parseColor("#008000"))
 
         }
 
@@ -279,6 +289,8 @@ if (roleId == UserRoles.ID_TRADER) {
                 submitButton.setBackgroundColor(Color.parseColor("#D3D3D3"))
                 ActivateAllButton.isEnabled = true
                 ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                infoText.text = "You are highlighted to Farmers."
+                infoText.setTextColor(Color.parseColor("#008000"))
                 return
             } else {
                 when (roleId) {
@@ -300,6 +312,8 @@ if (roleId == UserRoles.ID_TRADER) {
             appendvalues()
             ActivateAllButton.isEnabled = true
             ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+            infoText.text = "You are highlighted to Traders."
+            infoText.setTextColor(Color.parseColor("#008000"))
         } else
             if (needLoadBool && roleId == UserRoles.ID_TRADER && henCountFromShared !in listOf(
                     "0",
@@ -312,6 +326,8 @@ if (roleId == UserRoles.ID_TRADER) {
                 appendvalues()
                 ActivateAllButton.isEnabled = true
                 ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                infoText.text = "You are highlighted to Farmers."
+                infoText.setTextColor(Color.parseColor("#008000"))
             } else
                 if (needLoadBool && roleId == UserRoles.ID_SHOPKEEPER && henCountFromShared !in listOf(
                         "0",
@@ -324,10 +340,13 @@ if (roleId == UserRoles.ID_TRADER) {
                     appendvalues()
                     ActivateAllButton.isEnabled = true
                     ActivateAllButton.setBackgroundColor(Color.parseColor("#FF6347"))
+                    infoText.text = "You are highlighted to Traders."
+                    infoText.setTextColor(Color.parseColor("#008000"))
                 } else {
                     submitButton.isEnabled = true
                     submitButton.text = "Submit"
                     submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
                    /* if (roleId == UserRoles.ID_FARMER) {
                         sharedViewModel.setBatchReady(true)
                     }else{
@@ -530,11 +549,17 @@ if (roleId == UserRoles.ID_TRADER) {
                             sharedViewModel.setBatchReady(true)
                             SharedPreferencesManager.saveBatchBoolean(ctx, true)
                             (requireActivity() as? Dashboard)?.updateBatchReadySwitch(true)
+                            infoText.text = "You are highlighted to Traders."
+                            infoText.setTextColor(Color.parseColor("#008000"))
+                        } else if (roleId == UserRoles.ID_SHOPKEEPER) {
+                            infoText.text = "You are highlighted to Traders."
+                            infoText.setTextColor(Color.parseColor("#008000"))
                         } else {
                             (requireActivity() as? Dashboard)?.updateBatchReadySwitch(true)
                             sharedViewModel.setNeedLoad(true)
                             SharedPreferencesManager.saveNeedBoolean(ctx, true)
-
+                            infoText.text = "You are highlighted to Farmers."
+                            infoText.setTextColor(Color.parseColor("#008000"))
                         }
                         // ✅ Save pref + update sharedViewModel
                         when (roleId) {
@@ -566,14 +591,23 @@ if (roleId == UserRoles.ID_TRADER) {
                         submitButton.isEnabled = true
                         submitButton.text = "Submit"
                         submitButton.setBackgroundColor(Color.parseColor("#FF6347"))
+
                         if (roleId == UserRoles.ID_FARMER) {
                             sharedViewModel.setBatchReady(false)
                             SharedPreferencesManager.saveBatchBoolean(ctx, false)
                             (requireActivity() as? Dashboard)?.updateBatchReadySwitch(false)
-                        } else {
+                            infoText.text = "Submit form!  You’ll be highlighted to Traders."
+                            infoText.setTextColor(Color.RED)
+                        } else if (roleId == UserRoles.ID_SHOPKEEPER) {
+                            infoText.text = "Submit form!  You’ll be highlighted to Traders."
+                            infoText.setTextColor(Color.RED)
+                        }
+                        else {
                             sharedViewModel.setNeedLoad(false)
                             SharedPreferencesManager.saveNeedBoolean(ctx, false)
                             (requireActivity() as? Dashboard)?.updateBatchReadySwitch(false)
+                            infoText.text = "Submit form!  You’ll be highlighted to Farmers."
+                            infoText.setTextColor(Color.RED)
                         }
 
                         // Clear last submit time + saved hen data
